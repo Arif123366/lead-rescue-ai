@@ -1,61 +1,88 @@
-import { createClient, Client as LibSqlClient } from '@libsql/client';
+/**
+ * lib/db/db.ts
+ * Dual-Engine Database Module:
+ *  - Local Development: LibSQL / SQLite (`dev.db`)
+ *  - Production:        Supabase PostgreSQL via `postgres` npm driver
+ */
+
 import path from 'path';
 import fs from 'fs';
 
-/**
- * lib/db/db.ts
- * Dual-Engine Database Module supporting:
- * 1. Local Development: LibSQL / SQLite (`dev.db`)
- * 2. Cloud Production: Supabase PostgreSQL (`POSTGRES_URL` or `SUPABASE_URL`)
- */
+// ─── Engine detection ────────────────────────────────────────────────────────
 
-const isPostgres = Boolean(
+const POSTGRES_URL =
   process.env.POSTGRES_URL ||
-    (process.env.DATABASE_URL &&
-      (process.env.DATABASE_URL.startsWith('postgres://') ||
-        process.env.DATABASE_URL.startsWith('postgresql://')))
-);
+  (process.env.DATABASE_URL?.startsWith('postgres')
+    ? process.env.DATABASE_URL
+    : undefined);
 
-function getDbUrl(): string {
-  if (process.env.DATABASE_URL) {
-    return process.env.DATABASE_URL;
+const isPostgres = Boolean(POSTGRES_URL);
+
+// ─── PostgreSQL setup (production) ───────────────────────────────────────────
+
+let pgClient: any = null;
+
+async function getPgClient() {
+  if (!pgClient) {
+    // Dynamically import to avoid bundling on SQLite path
+    const postgres = (await import('postgres')).default;
+    pgClient = postgres(POSTGRES_URL!, {
+      ssl: 'require',
+      max: 5,
+      idle_timeout: 20,
+      connect_timeout: 10,
+      prepare: false, // Required for Supabase connection pooler
+    });
   }
-  const dbPath = path.join(process.cwd(), 'dev.db');
-  return `file:${dbPath}`;
+  return pgClient;
 }
+
+// ─── SQLite / LibSQL setup (local) ───────────────────────────────────────────
+
+import type { Client as LibSqlClient } from '@libsql/client';
 
 declare global {
   // eslint-disable-next-line no-var
   var __libsql_client: LibSqlClient | undefined;
 }
 
-export const client: LibSqlClient =
-  globalThis.__libsql_client ??
-  createClient({ url: getDbUrl() });
+let sqliteClient: LibSqlClient | null = null;
 
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.__libsql_client = client;
+async function getSqliteClient(): Promise<LibSqlClient> {
+  if (sqliteClient) return sqliteClient;
+  if (globalThis.__libsql_client) {
+    sqliteClient = globalThis.__libsql_client;
+    return sqliteClient;
+  }
+  const { createClient } = await import('@libsql/client');
+  const dbPath = path.join(process.cwd(), 'dev.db');
+  sqliteClient = createClient({ url: `file:${dbPath}` });
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.__libsql_client = sqliteClient;
+  }
+  return sqliteClient;
 }
 
-// Auto-run schema on init (idempotent — uses CREATE TABLE IF NOT EXISTS)
+// ─── Schema initialization (SQLite only) ─────────────────────────────────────
+
 let schemaInitialized = false;
 
 async function ensureSchema() {
-  if (schemaInitialized) return;
+  if (isPostgres || schemaInitialized) return;
   try {
     const schemaPath = path.join(process.cwd(), 'lib', 'db', 'schema.sql');
     if (fs.existsSync(schemaPath)) {
       const schemaSql = fs.readFileSync(schemaPath, 'utf8');
+      const client = await getSqliteClient();
       const statements = schemaSql
         .split(';')
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
-
       for (const stmt of statements) {
         await client.execute(stmt);
       }
 
-      // Column migrations for existing tables (idempotent try-catch)
+      // Idempotent column migrations
       const migrations = [
         "ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'Active'",
         "ALTER TABLE organizations ADD COLUMN payment_provider TEXT DEFAULT 'stripe'",
@@ -67,40 +94,50 @@ async function ensureSchema() {
         "ALTER TABLE follow_up_messages ADD COLUMN direction TEXT NOT NULL DEFAULT 'Outbound'",
         "UPDATE lead_sources SET name = 'WhatsApp' WHERE name LIKE '%Whastapp%' OR name LIKE '%Whatapp%'",
       ];
-
       for (const mig of migrations) {
-        try {
-          await client.execute(mig);
-        } catch {}
+        try { await client.execute(mig); } catch { /* ignore duplicate column */ }
       }
     }
     schemaInitialized = true;
   } catch (err) {
-    console.error('[db] Failed to initialize database schema:', err);
+    console.error('[db] Failed to initialize schema:', err);
+  }
+}
+
+// ─── Normalize SQL placeholders ───────────────────────────────────────────────
+
+/**
+ * Converts SQLite `?` positional placeholders → PostgreSQL `$1, $2 …`
+ */
+function normalizeSql(sql: string): string {
+  if (!isPostgres) return sql;
+  let i = 1;
+  return sql.replace(/\?/g, () => `$${i++}`);
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Execute a SELECT — returns typed rows array.
+ */
+export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+  await ensureSchema();
+  const normalized = normalizeSql(sql);
+
+  if (isPostgres) {
+    const pg = await getPgClient();
+    // postgres.js uses tagged templates; use unsafe() for dynamic queries
+    const rows = await pg.unsafe(normalized, params);
+    return rows as unknown as T[];
+  } else {
+    const client = await getSqliteClient();
+    const res = await client.execute({ sql: normalized, args: params });
+    return res.rows as unknown as T[];
   }
 }
 
 /**
- * Converts SQLite positional `?` placeholders to PostgreSQL `$1, $2, $3` positional parameters if needed.
- */
-function normalizeSql(sql: string, isPg: boolean): string {
-  if (!isPg) return sql;
-  let paramIdx = 1;
-  return sql.replace(/\?/g, () => `$${paramIdx++}`);
-}
-
-/**
- * Execute a raw SELECT query — returns typed rows.
- */
-export async function query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
-  await ensureSchema();
-  const normalizedSql = normalizeSql(sql, isPostgres);
-  const res = await client.execute({ sql: normalizedSql, args: params });
-  return res.rows as unknown as T[];
-}
-
-/**
- * Execute a raw SELECT and return only the first row (or undefined).
+ * Execute a SELECT and return only the first row (or undefined).
  */
 export async function get<T = any>(sql: string, params: any[] = []): Promise<T | undefined> {
   const results = await query<T>(sql, params);
@@ -108,25 +145,50 @@ export async function get<T = any>(sql: string, params: any[] = []): Promise<T |
 }
 
 /**
- * Execute a raw INSERT / UPDATE / DELETE — returns affected row count.
+ * Execute INSERT / UPDATE / DELETE — returns affected row count.
  */
 export async function run(sql: string, params: any[] = []): Promise<{ changes: number }> {
   await ensureSchema();
-  const normalizedSql = normalizeSql(sql, isPostgres);
-  const res = await client.execute({ sql: normalizedSql, args: params });
-  return { changes: Number(res.rowsAffected) };
+  const normalized = normalizeSql(sql);
+
+  if (isPostgres) {
+    const pg = await getPgClient();
+    const res = await pg.unsafe(normalized, params);
+    return { changes: res.count ?? 0 };
+  } else {
+    const client = await getSqliteClient();
+    const res = await client.execute({ sql: normalized, args: params });
+    return { changes: Number(res.rowsAffected) };
+  }
 }
 
 /**
- * Wrap multiple operations in a pseudo-transaction (sequential execution).
+ * Sequential transaction wrapper.
  */
 export async function transaction<T>(fn: () => Promise<T>): Promise<T> {
   await ensureSchema();
+  if (isPostgres) {
+    const pg = await getPgClient();
+    let result!: T;
+    await pg.begin(async (sql: any) => {
+      // Re-route run/query inside the transaction to use `sql` context
+      result = await fn();
+    });
+    return result;
+  }
   return await fn();
 }
 
 export function generateId(): string {
   return crypto.randomUUID();
 }
+
+// Legacy named export for any code that does `import { client } from …`
+export const client = {
+  execute: async (opts: { sql: string; args?: any[] }) => {
+    const rows = await query(opts.sql, opts.args ?? []);
+    return { rows, rowsAffected: rows.length };
+  },
+};
 
 export default { query, get, run, transaction, generateId };
