@@ -5,6 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 
 const { get, run } = require('../../lib/db/db');
 const { qualifyLead } = require('../../lib/ai/qualification');
@@ -13,6 +14,11 @@ const { sendWhatsAppMessage } = require('../../lib/integrations/wasender');
 const { processStripeWebhookPayload } = require('../../lib/payments/stripe');
 const { processPayoneerWebhookPayload } = require('../../lib/payments/payoneer');
 const { cryptoNativeOrRandomUUID } = require('../../lib/utils/uuid');
+
+function sanitize(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/<[^>]*>?/gm, '').trim();
+}
 
 // ─── Lead Source Webhooks ───────────────────────────────────────────────────
 
@@ -42,6 +48,18 @@ router.post('/lead-source/:id', async (req, res) => {
       return res.status(404).json({ error: 'Invalid or inactive lead source webhook endpoint.' });
     }
 
+    // Optional HMAC signature check if header exists
+    const signature = req.headers['x-lead-rescue-signature'];
+    let sourceConfig = {};
+    try { sourceConfig = JSON.parse(source.configuration || '{}'); } catch {}
+
+    if (sourceConfig.secret && signature) {
+      const computed = crypto.createHmac('sha256', sourceConfig.secret).update(JSON.stringify(req.body)).digest('hex');
+      if (computed !== signature) {
+        return res.status(401).json({ error: 'Invalid HMAC signature' });
+      }
+    }
+
     let name = 'Inbound Lead';
     let email, phone, company;
     let productInterest = 'Inbound Inquiry';
@@ -49,19 +67,19 @@ router.post('/lead-source/:id', async (req, res) => {
 
     const payload = req.body.data || req.body.lead || req.body.fields || req.body;
 
-    const firstName = payload.first_name || payload.firstname || '';
-    const lastName = payload.last_name || payload.lastname || '';
+    const firstName = sanitize(payload.first_name || payload.firstname || '');
+    const lastName = sanitize(payload.last_name || payload.lastname || '');
 
     if (payload.name || payload.full_name || payload.contact_name) {
-      name = payload.name || payload.full_name || payload.contact_name;
+      name = sanitize(payload.name || payload.full_name || payload.contact_name);
     } else if (firstName || lastName) {
       name = `${firstName} ${lastName}`.trim();
     }
 
-    email = payload.email || payload.email_address || payload.contact_email || undefined;
-    phone = payload.phone || payload.phone_number || payload.mobile || payload.contact_phone || undefined;
-    company = payload.company || payload.company_name || payload.organization || undefined;
-    productInterest = payload.product_interest || payload.interest || payload.message || payload.notes || payload.subject || 'Inbound Webhook Inquiry';
+    email = sanitize(payload.email || payload.email_address || payload.contact_email || undefined);
+    phone = sanitize(payload.phone || payload.phone_number || payload.mobile || payload.contact_phone || undefined);
+    company = sanitize(payload.company || payload.company_name || payload.organization || undefined);
+    productInterest = sanitize(payload.product_interest || payload.interest || payload.message || payload.notes || payload.subject || 'Inbound Webhook Inquiry');
     dealValue = parseFloat(payload.deal_value || payload.estimated_budget || payload.budget || '0') || undefined;
 
     const orgInfo = await get(

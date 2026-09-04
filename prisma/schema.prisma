@@ -31,6 +31,9 @@ model Organization {
   owner_user_id        String
   subscription_plan_id String           @default("plan_starter")
   current_lead_count   Int              @default(0)
+  billing_status       String?          @default("active")
+  next_billing_date    DateTime?
+  stripe_customer_id   String?
   created_at           DateTime         @default(now())
   updated_at           DateTime         @updatedAt
   subscription_plan    SubscriptionPlan @relation(fields: [subscription_plan_id], references: [id])
