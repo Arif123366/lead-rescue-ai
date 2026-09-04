@@ -127,16 +127,6 @@ export default function FollowupsPage() {
             </button>
           </div>
 
-          {/* Placeholders Guide Banner */}
-          <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center gap-3 text-xs">
-            <Code className="w-5 h-5 text-rose-400 shrink-0" />
-            <div className="text-slate-300">
-              <span className="font-bold text-white">Dynamic Mustache Placeholders Available: </span>
-              <code className="bg-slate-900 px-1.5 py-0.5 rounded text-rose-300 font-mono text-[11px]">&#123;&#123;lead.name&#125;&#125;</code>,{' '}
-              <code className="bg-slate-900 px-1.5 py-0.5 rounded text-rose-300 font-mono text-[11px]">&#123;&#123;lead.company&#125;&#125;</code>,{' '}
-              <code className="bg-slate-900 px-1.5 py-0.5 rounded text-rose-300 font-mono text-[11px]">&#123;&#123;lead.product_interest&#125;&#125;</code>
-            </div>
-          </div>
 
           {/* Templates Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -240,7 +230,7 @@ export default function FollowupsPage() {
                   required
                   value={messageBody}
                   onChange={(e) => setMessageBody(e.target.value)}
-                  placeholder="Hi {{lead.name}}, following up regarding {{lead.product_interest}} for {{lead.company}}..."
+                  placeholder="Enter message template content..."
                   className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white h-24 focus:outline-none focus:border-rose-500 font-mono"
                 />
               </div>
