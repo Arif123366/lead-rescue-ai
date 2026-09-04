@@ -55,6 +55,43 @@ app.use(
   })
 );
 
+// ─── Security Response Headers ───────────────────────────────────────────────
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+// ─── IP Rate Limiter for API Protection ─────────────────────────────────────
+const rateLimitMap = new Map();
+
+app.use((req, res, next) => {
+  if (req.path === '/health') return next();
+  const clientIp = req.ip || req.headers['x-forwarded-for'] || '127.0.0.1';
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute window
+  const maxRequests = 120; // 120 requests per minute per IP
+
+  const record = rateLimitMap.get(clientIp) || { count: 0, resetTime: now + windowMs };
+
+  if (now > record.resetTime) {
+    record.count = 1;
+    record.resetTime = now + windowMs;
+  } else {
+    record.count++;
+  }
+
+  rateLimitMap.set(clientIp, record);
+
+  if (record.count > maxRequests) {
+    return res.status(429).json({ error: 'Too many requests. Please slow down.' });
+  }
+
+  next();
+});
+
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
