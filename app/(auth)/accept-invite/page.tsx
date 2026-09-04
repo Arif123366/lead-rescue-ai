@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
@@ -39,7 +40,7 @@ function AcceptInviteForm() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/accept-invite', {
+      const res = await apiFetch('/api/v1/auth/accept-invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password, name }),

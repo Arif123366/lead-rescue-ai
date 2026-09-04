@@ -14,7 +14,7 @@ export async function seedDatabase() {
       .filter((s) => s.length > 0);
 
     for (const stmt of statements) {
-      await client.execute(stmt);
+      await client.execute({ sql: stmt });
     }
   }
 

@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -46,7 +47,7 @@ export default function AppointmentsPage() {
 
   const fetchLeads = async () => {
     try {
-      const res = await fetch('/api/v1/leads');
+      const res = await apiFetch('/api/v1/leads');
       if (res.ok) {
         const json = await res.json();
         setLeads(json.leads || []);
@@ -69,7 +70,7 @@ export default function AppointmentsPage() {
     const endIso = new Date(new Date(startTime).getTime() + 60 * 60 * 1000).toISOString();
 
     try {
-      const res = await fetch('/api/v1/appointments', {
+      const res = await apiFetch('/api/v1/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -94,7 +95,7 @@ export default function AppointmentsPage() {
 
   const handleUpdateStatus = async (id: string, newStatus: string) => {
     try {
-      const res = await fetch(`/api/v1/appointments/${id}`, {
+      const res = await apiFetch(`/api/v1/appointments/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })

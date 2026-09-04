@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -27,7 +28,7 @@ export default function LeadRescuePage() {
   const fetchRescueScan = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/v1/rescue/scan?hours=${hoursThreshold}`);
+      const res = await apiFetch(`/api/v1/rescue/scan?hours=${hoursThreshold}`);
       if (res.ok) {
         const json = await res.json();
         setAtRiskLeads(json.at_risk_leads || []);
@@ -46,7 +47,7 @@ export default function LeadRescuePage() {
   const handleRescueAction = async (leadId: string, actionType: string, templateId?: string) => {
     setRescuingId(leadId);
     try {
-      const res = await fetch('/api/v1/rescue/action', {
+      const res = await apiFetch('/api/v1/rescue/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

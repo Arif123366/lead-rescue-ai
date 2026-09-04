@@ -79,7 +79,7 @@ async function ensureSchema() {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
       for (const stmt of statements) {
-        await client.execute(stmt);
+        await client.execute({ sql: stmt });
       }
 
       // Idempotent column migrations
@@ -95,7 +95,7 @@ async function ensureSchema() {
         "UPDATE lead_sources SET name = 'WhatsApp' WHERE name LIKE '%Whastapp%' OR name LIKE '%Whatapp%'",
       ];
       for (const mig of migrations) {
-        try { await client.execute(mig); } catch { /* ignore duplicate column */ }
+        try { await client.execute({ sql: mig }); } catch { /* ignore duplicate column */ }
       }
     }
     schemaInitialized = true;

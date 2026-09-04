@@ -59,15 +59,25 @@ export function verifyToken(token: string): UserSession | null {
   }
 }
 
-export async function getCurrentUser(req?: NextRequest): Promise<UserSession | null> {
+export async function getCurrentUser(req?: any): Promise<UserSession | null> {
   let token: string | undefined;
 
   if (req) {
-    const authHeader = req.headers.get('authorization');
-    if (authHeader && authHeader.startsWith('Bearer ')) {
+    const authHeader = typeof req.headers?.get === 'function'
+      ? req.headers.get('authorization')
+      : (req.headers?.authorization || req.headers?.Authorization);
+
+    if (authHeader && typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
-    } else {
-      token = req.cookies.get(COOKIE_NAME)?.value;
+    } else if (req.cookies) {
+      if (typeof req.cookies.get === 'function') {
+        token = req.cookies.get(COOKIE_NAME)?.value;
+      } else {
+        token = req.cookies[COOKIE_NAME];
+      }
+    } else if (req.headers?.cookie) {
+      const match = req.headers.cookie.match(new RegExp(`${COOKIE_NAME}=([^;]+)`));
+      if (match) token = match[1];
     }
   } else {
     try {
@@ -105,10 +115,20 @@ export async function getCurrentUser(req?: NextRequest): Promise<UserSession | n
 
 export function setSessionCookie(response: Response, token: string) {
   const cookieFlags = isProd
-    ? `${COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`
+    ? `${COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=None; Max-Age=${7 * 24 * 60 * 60}`
     : `${COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`;
 
   response.headers.append('Set-Cookie', cookieFlags);
+}
+
+export function setExpressSessionCookie(res: any, token: string) {
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    path: '/',
+  });
 }
 
 export function clearSessionCookie(response: Response) {
@@ -118,6 +138,16 @@ export function clearSessionCookie(response: Response) {
   );
 }
 
+export function clearExpressSessionCookie(res: any) {
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  });
+}
+
 export function enforceRole(user: UserSession, allowedRoles: string[]): boolean {
   return allowedRoles.includes(user.role);
 }
+

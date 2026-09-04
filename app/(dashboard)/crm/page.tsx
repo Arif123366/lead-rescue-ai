@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -53,7 +54,7 @@ export default function CrmPipelinePage() {
 
   const fetchPipeline = async () => {
     try {
-      const res = await fetch('/api/v1/crm/pipeline');
+      const res = await apiFetch('/api/v1/crm/pipeline');
       if (res.ok) {
         const json = await res.json();
         setPipeline(json.pipeline || []);
@@ -89,7 +90,7 @@ export default function CrmPipelinePage() {
 
   const executeStageMove = async (leadId: string, targetStageId: string, value?: string, reason?: string) => {
     try {
-      const res = await fetch('/api/v1/crm/move', {
+      const res = await apiFetch('/api/v1/crm/move', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -114,7 +115,7 @@ export default function CrmPipelinePage() {
     if (!newStageName.trim()) return;
 
     try {
-      const res = await fetch('/api/v1/crm/stages', {
+      const res = await apiFetch('/api/v1/crm/stages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

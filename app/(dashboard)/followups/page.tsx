@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -30,7 +31,7 @@ export default function FollowupsPage() {
 
   const fetchTemplates = async () => {
     try {
-      const res = await fetch('/api/v1/followup-templates');
+      const res = await apiFetch('/api/v1/followup-templates');
       if (res.ok) {
         const json = await res.json();
         setTemplates(json.templates || []);
@@ -51,7 +52,7 @@ export default function FollowupsPage() {
     if (!name || !messageBody) return;
 
     try {
-      const res = await fetch('/api/v1/followup-templates', {
+      const res = await apiFetch('/api/v1/followup-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,7 +81,7 @@ export default function FollowupsPage() {
   const handleDeleteTemplate = async (id: string) => {
     if (!confirm('Are you sure you want to delete this template?')) return;
     try {
-      const res = await fetch(`/api/v1/followup-templates/${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/v1/followup-templates/${id}`, { method: 'DELETE' });
       if (res.ok) fetchTemplates();
     } catch (err) {
       console.error(err);
@@ -89,7 +90,7 @@ export default function FollowupsPage() {
 
   const handleToggleActive = async (tpl: any) => {
     try {
-      const res = await fetch(`/api/v1/followup-templates/${tpl.id}`, {
+      const res = await apiFetch(`/api/v1/followup-templates/${tpl.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ is_active: !tpl.is_active })

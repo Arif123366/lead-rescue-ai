@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -76,7 +77,7 @@ export default function LeadsPage() {
     setFormError('');
 
     try {
-      const res = await fetch('/api/v1/leads', {
+      const res = await apiFetch('/api/v1/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newLead)
@@ -117,7 +118,7 @@ export default function LeadsPage() {
       skipEmptyLines: true,
       complete: async (results) => {
         try {
-          const res = await fetch('/api/v1/leads/import', {
+          const res = await apiFetch('/api/v1/leads/import', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rows: results.data })

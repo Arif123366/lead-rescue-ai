@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bell, ShieldAlert, LogOut, User, Building, Flame, ChevronDown, Check, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '@/lib/api-client';
 
 export function Navbar() {
   const router = useRouter();
@@ -19,7 +20,7 @@ export function Navbar() {
 
   const fetchUserData = async () => {
     try {
-      const res = await fetch('/api/v1/auth/me');
+      const res = await apiFetch('/api/v1/auth/me');
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
@@ -32,7 +33,7 @@ export function Navbar() {
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch('/api/v1/notifications');
+      const res = await apiFetch('/api/v1/notifications');
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.notifications || []);
@@ -50,7 +51,8 @@ export function Navbar() {
     // EventSource for Zero-Latency SSE Real-Time Stream
     let eventSource: EventSource | null = null;
     try {
-      eventSource = new EventSource('/api/v1/notifications/stream');
+      const sseBase = process.env.NEXT_PUBLIC_API_URL || '';
+      eventSource = new EventSource(`${sseBase}/api/v1/notifications/stream`, { withCredentials: true });
       eventSource.addEventListener('notification', () => {
         fetchNotifications();
       });
@@ -81,14 +83,13 @@ export function Navbar() {
   }, []);
 
   const handleLogout = async () => {
-    await fetch('/api/v1/auth/logout', { method: 'POST' });
+    await apiFetch('/api/v1/auth/logout', { method: 'POST' });
     router.push('/login');
   };
 
   const markAsRead = async (id?: string) => {
-    await fetch('/api/v1/notifications', {
+    await apiFetch('/api/v1/notifications', {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(id ? { id } : { mark_all_read: true })
     });
     fetchNotifications();

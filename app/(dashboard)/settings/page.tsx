@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
@@ -68,13 +69,13 @@ export default function SettingsPage() {
   const fetchSettingsData = async () => {
     try {
       const [resMe, resTeam, resSources, resSub, resOrg, resRag, resCrm] = await Promise.all([
-        fetch('/api/v1/auth/me'),
-        fetch('/api/v1/organizations/team'),
-        fetch('/api/v1/lead-sources'),
-        fetch('/api/v1/organizations/subscription'),
-        fetch('/api/v1/organizations'),
-        fetch('/api/v1/rag/knowledge'),
-        fetch('/api/v1/crm-connectors')
+        apiFetch('/api/v1/auth/me'),
+        apiFetch('/api/v1/organizations/team'),
+        apiFetch('/api/v1/lead-sources'),
+        apiFetch('/api/v1/organizations/subscription'),
+        apiFetch('/api/v1/organizations'),
+        apiFetch('/api/v1/rag/knowledge'),
+        apiFetch('/api/v1/crm-connectors')
       ]);
 
       if (resMe.ok) {
@@ -116,7 +117,7 @@ export default function SettingsPage() {
     setCreatedInviteUrl(null);
 
     try {
-      const res = await fetch('/api/v1/organizations/team', {
+      const res = await apiFetch('/api/v1/organizations/team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: inviteEmail, name: inviteName, role: inviteRole })
@@ -142,7 +143,7 @@ export default function SettingsPage() {
   const handleRemoveUser = async (userId: string) => {
     if (!confirm('Are you sure you want to remove this member?')) return;
     try {
-      const res = await fetch(`/api/v1/organizations/team?id=${userId}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/v1/organizations/team?id=${userId}`, { method: 'DELETE' });
       if (res.ok) fetchSettingsData();
       else {
         const json = await res.json();
@@ -156,7 +157,7 @@ export default function SettingsPage() {
   const handleCreateSource = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/v1/lead-sources', {
+      const res = await apiFetch('/api/v1/lead-sources', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: sourceName, type: sourceType })
@@ -184,7 +185,7 @@ export default function SettingsPage() {
     setProcessingPayment(true);
 
     try {
-      const res = await fetch('/api/v1/payments/checkout', {
+      const res = await apiFetch('/api/v1/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -211,7 +212,7 @@ export default function SettingsPage() {
   const handleSaveOrg = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/v1/organizations', {
+      const res = await apiFetch('/api/v1/organizations', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: orgName })
@@ -242,7 +243,7 @@ export default function SettingsPage() {
     e.preventDefault();
     setUploadingRag(true);
     try {
-      const res = await fetch('/api/v1/rag/knowledge', {
+      const res = await apiFetch('/api/v1/rag/knowledge', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: ragTitle, content: ragContent, category: ragCategory })
@@ -266,7 +267,7 @@ export default function SettingsPage() {
   const handleDeleteRagDoc = async (id: string) => {
     if (!confirm('Remove this document chunk from RAG Knowledge Base?')) return;
     try {
-      const res = await fetch(`/api/v1/rag/knowledge?id=${id}`, { method: 'DELETE' });
+      const res = await apiFetch(`/api/v1/rag/knowledge?id=${id}`, { method: 'DELETE' });
       if (res.ok) fetchSettingsData();
     } catch (err) {
       console.error(err);
@@ -276,7 +277,7 @@ export default function SettingsPage() {
   const handleConnectCrm = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('/api/v1/crm-connectors', {
+      const res = await apiFetch('/api/v1/crm-connectors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -305,7 +306,7 @@ export default function SettingsPage() {
   const handleSyncCrm = async (connectorId: string) => {
     setSyncingCrmId(connectorId);
     try {
-      const res = await fetch('/api/v1/crm-connectors', {
+      const res = await apiFetch('/api/v1/crm-connectors', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: connectorId })

@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -16,7 +17,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/reset-password', {
+      const res = await apiFetch('/api/v1/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

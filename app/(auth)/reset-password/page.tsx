@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
@@ -39,7 +40,7 @@ function ResetPasswordForm() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/reset-password', {
+      const res = await apiFetch('/api/v1/auth/reset-password', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),

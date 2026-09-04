@@ -1,4 +1,5 @@
 'use client';
+import { apiFetch } from '@/lib/api-client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +21,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/v1/auth/signup', {
+      const res = await apiFetch('/api/v1/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

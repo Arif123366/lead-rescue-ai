@@ -16,6 +16,7 @@ import {
   Briefcase,
   UserCheck
 } from 'lucide-react';
+import { apiFetch } from '@/lib/api-client';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard', roles: ['Organization Owner', 'Marketing Manager', 'Sales Representative'] },
@@ -33,7 +34,7 @@ export function Sidebar() {
   const [userRole, setUserRole] = useState<string>('Organization Owner');
 
   useEffect(() => {
-    fetch('/api/v1/auth/me')
+    apiFetch('/api/v1/auth/me')
       .then((res) => res.json())
       .then((data) => {
         if (data.user?.role) setUserRole(data.user.role);
