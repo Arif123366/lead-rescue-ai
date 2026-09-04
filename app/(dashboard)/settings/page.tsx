@@ -109,6 +109,20 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchSettingsData();
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam === 'billing' || tabParam === 'subscription') {
+        setActiveTab('billing');
+      } else if (tabParam === 'team') {
+        setActiveTab('team');
+      } else if (tabParam === 'sources') {
+        setActiveTab('sources');
+      } else if (tabParam === 'org') {
+        setActiveTab('org');
+      }
+    }
   }, []);
 
   const handleInviteUser = async (e: React.FormEvent) => {

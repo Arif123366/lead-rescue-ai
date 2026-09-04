@@ -114,13 +114,17 @@ export function Navbar() {
         </Link>
 
         {org && (
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300">
-            <Building className="w-3.5 h-3.5 text-rose-400" />
+          <Link
+            href="/settings?tab=billing"
+            title="Manage Subscription Plans & Usage Limits"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 hover:border-rose-500/50 hover:bg-slate-800 transition-all cursor-pointer group"
+          >
+            <Building className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
             <span className="font-medium truncate max-w-[180px]">{org.name}</span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 group-hover:bg-rose-500/30">
               {org.plan_name}
             </span>
-          </div>
+          </Link>
         )}
       </div>
 
