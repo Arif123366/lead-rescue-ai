@@ -9,6 +9,14 @@
 
 'use strict';
 
+// ─── Register TypeScript loader ──────────────────────────────────────────────
+// Allows plain `node server/index.js` to load TypeScript files from lib/
+try {
+  require('tsx/cjs');
+} catch (e) {
+  console.warn('tsx loader registration failed:', e.message);
+}
+
 // ─── Load environment variables ───────────────────────────────────────────────
 // In production (Render), env vars are injected by the platform.
 // For local testing, create a server/.env file.
