@@ -1,0 +1,205 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model SubscriptionPlan {
+  id            String         @id
+  name          String
+  description   String?
+  monthly_price Float          @default(0)
+  lead_limit    Int            @default(50)
+  user_limit    Int            @default(2)
+  features      String?        // JSON array stored as string
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @updatedAt
+  organizations Organization[]
+
+  @@map("subscription_plans")
+}
+
+model Organization {
+  id                   String           @id
+  name                 String
+  owner_user_id        String
+  subscription_plan_id String           @default("plan_starter")
+  current_lead_count   Int              @default(0)
+  created_at           DateTime         @default(now())
+  updated_at           DateTime         @updatedAt
+  subscription_plan    SubscriptionPlan @relation(fields: [subscription_plan_id], references: [id])
+  users                User[]
+  crm_stages           CrmStage[]
+  lead_sources         LeadSource[]
+  leads                Lead[]
+  follow_up_templates  FollowUpTemplate[]
+  notifications        Notification[]
+
+  @@map("organizations")
+}
+
+model User {
+  id              String        @id
+  email           String        @unique
+  password_hash   String
+  name            String
+  organization_id String
+  role            String        @default("Sales Representative")
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  organization    Organization  @relation(fields: [organization_id], references: [id])
+  assigned_leads  Lead[]        @relation("AssignedLeads")
+  appointments    Appointment[]
+  notifications   Notification[]
+
+  @@map("users")
+}
+
+model CrmStage {
+  id              String       @id
+  organization_id String
+  name            String
+  order_index     Int          @default(0)
+  is_initial      Int          @default(0)
+  is_final_won    Int          @default(0)
+  is_final_lost   Int          @default(0)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  leads           Lead[]
+
+  @@map("crm_stages")
+}
+
+model LeadSource {
+  id              String       @id
+  organization_id String
+  name            String
+  type            String
+  configuration   String?      // JSON stored as string
+  is_active       Int          @default(1)
+  created_at      DateTime     @default(now())
+  updated_at      DateTime     @updatedAt
+  organization    Organization @relation(fields: [organization_id], references: [id])
+  leads           Lead[]
+
+  @@map("lead_sources")
+}
+
+model Lead {
+  id                     String                  @id
+  organization_id        String
+  name                   String
+  email                  String?
+  phone                  String?
+  company                String?
+  product_interest       String?
+  source_id              String?
+  qualification_score    Int                     @default(0)
+  qualification_status   String                  @default("Pending")
+  current_crm_stage_id   String?
+  assigned_to_user_id    String?
+  last_contacted_at      DateTime?
+  deal_value             Float?
+  reason_for_loss        String?
+  opt_out_communications Int                     @default(0)
+  notes                  String?
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+  organization           Organization            @relation(fields: [organization_id], references: [id])
+  source                 LeadSource?             @relation(fields: [source_id], references: [id])
+  crm_stage              CrmStage?               @relation(fields: [current_crm_stage_id], references: [id])
+  assigned_to            User?                   @relation("AssignedLeads", fields: [assigned_to_user_id], references: [id])
+  qualification_results  LeadQualificationResult[]
+  follow_up_messages     FollowUpMessage[]
+  appointments           Appointment[]
+
+  @@map("leads")
+}
+
+model LeadQualificationResult {
+  id                   String   @id
+  lead_id              String
+  analysis_data        String?  // JSON stored as string
+  qualification_score  Int      @default(0)
+  qualification_status String   @default("Pending")
+  ai_model_used        String?
+  processed_at         DateTime @default(now())
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+  lead                 Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+
+  @@map("lead_qualification_results")
+}
+
+model FollowUpTemplate {
+  id                 String          @id
+  organization_id    String
+  name               String
+  message_body       String
+  channel            String          @default("Email")
+  trigger_conditions String?         // JSON stored as string
+  is_active          Int             @default(1)
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  organization       Organization    @relation(fields: [organization_id], references: [id])
+  messages           FollowUpMessage[]
+
+  @@map("follow_up_templates")
+}
+
+model FollowUpMessage {
+  id          String           @id
+  lead_id     String
+  template_id String?
+  channel     String
+  message     String
+  status      String           @default("Sent")
+  direction   String           @default("Outbound")
+  sent_at     DateTime         @default(now())
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+  lead        Lead             @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+  template    FollowUpTemplate? @relation(fields: [template_id], references: [id])
+
+  @@map("follow_up_messages")
+}
+
+model Appointment {
+  id                   String   @id
+  lead_id              String
+  scheduled_by_user_id String
+  start_time           DateTime
+  end_time             DateTime
+  notes                String?
+  status               String   @default("Scheduled")
+  created_at           DateTime @default(now())
+  updated_at           DateTime @updatedAt
+  lead                 Lead     @relation(fields: [lead_id], references: [id], onDelete: Cascade)
+  scheduled_by         User     @relation(fields: [scheduled_by_user_id], references: [id])
+
+  @@map("appointments")
+}
+
+model Notification {
+  id                  String       @id
+  user_id             String
+  organization_id     String
+  type                String
+  message             String
+  related_entity_id   String?
+  related_entity_type String?
+  is_read             Int          @default(0)
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+  user                User         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  organization        Organization @relation(fields: [organization_id], references: [id])
+
+  @@map("notifications")
+}

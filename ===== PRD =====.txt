@@ -1,0 +1,2107 @@
+===== PRD =====
+
+{
+  "project_title": "Lead Rescue AI",
+  "target_audience": [
+    "Real estate agencies",
+    "Digital marketing agencies",
+    "Web-development agencies",
+    "Education/academies",
+    "Solar companies",
+    "Car dealerships",
+    "Clinics",
+    "Travel agencies",
+    "Insurance agencies",
+    "B2B service companies"
+  ],
+  "core_features": [
+    {
+      "feature_id": "auth-management",
+      "name": "User Authentication and Authorization",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As a potential user, I want to sign up for a new account and organization so that I can start using the Lead Rescue AI platform.",
+          "acceptance_criteria": [
+            "Given I am on the signup page",
+            "When I provide a valid email, password, organization name, and my name",
+            "And I submit the form",
+            "Then my account should be created as an Organization Owner",
+            "And an organization with the provided name should be created, linked to my user",
+            "And I should be automatically logged in and redirected to the dashboard.",
+            "And a default subscription plan (e.g., trial) should be assigned to my organization."
+          ],
+          "edge_cases": [
+            "If the email is already registered, the system should display an error message 'Email already in use.'",
+            "If the password does not meet complexity requirements, the system should display an error message."
+          ]
+        },
+        {
+          "story": "As a registered user, I want to log in to my account so that I can access my organization's Lead Rescue AI dashboard.",
+          "acceptance_criteria": [
+            "Given I am on the login page",
+            "When I enter my registered email and password",
+            "And I click the 'Login' button",
+            "Then I should be authenticated and redirected to my organization's dashboard."
+          ],
+          "edge_cases": [
+            "If I enter incorrect credentials, the system should display an error message 'Invalid email or password.'",
+            "If my account is suspended, the system should display an appropriate error message and prevent login."
+          ]
+        },
+        {
+          "story": "As a logged-in user, I want to log out of my account so that I can secure my session.",
+          "acceptance_criteria": [
+            "Given I am logged in",
+            "When I click the 'Logout' button",
+            "Then my session should be terminated",
+            "And I should be redirected to the login page."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a registered user, I want to reset my password so that I can regain access to my account if I forget it.",
+          "acceptance_criteria": [
+            "Given I am on the login page",
+            "When I click 'Forgot Password' and enter my registered email",
+            "Then the system should send a password reset link to my email address.",
+            "And when I click the link and provide a new valid password, my password should be updated."
+          ],
+          "edge_cases": [
+            "If the email is not registered, the system should indicate that no account is found for that email (without revealing if the email exists for security reasons).",
+            "If the reset link expires, the system should prompt me to request a new one."
+          ]
+        },
+        {
+          "story": "As an Organization Owner, I want to invite new team members to my organization so that they can help manage leads.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to the 'Team Management' section",
+            "And I enter a new user's email and select their role (e.g., Sales Representative, Marketing Manager)",
+            "And I click 'Invite User'",
+            "Then an invitation email should be sent to the user with a link to set up their password.",
+            "And the new user should appear in the team list with a 'Pending' status."
+          ],
+          "edge_cases": [
+            "If the invited email is already associated with another organization, the system should prevent the invitation and inform the owner.",
+            "If the organization has reached its user limit based on the subscription plan, the system should prevent new invitations and prompt for an upgrade."
+          ]
+        },
+        {
+          "story": "As an Organization Owner, I want to manage roles and remove users from my organization so that I can control access and team composition.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to the 'Team Management' section",
+            "And I select an existing user",
+            "Then I should be able to change their role (e.g., from Sales Representative to Marketing Manager).",
+            "And I should be able to remove the user from the organization, revoking their access."
+          ],
+          "edge_cases": [
+            "I should not be able to remove myself as the sole Organization Owner without transferring ownership first."
+          ]
+        }
+      ]
+    },
+    {
+      "feature_id": "org-sub-management",
+      "name": "Organization and Subscription Management",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As an Organization Owner, I want to view my current subscription details so that I understand my plan limits and features.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to the 'Subscription' or 'Billing' section",
+            "Then I should see my current plan name, monthly price, lead limit, current lead count, and plan features.",
+            "And I should see the next billing date."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As an Organization Owner, I want to upgrade or downgrade my subscription plan so that I can adjust to my business needs.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to the 'Subscription' section",
+            "And I select a different subscription plan",
+            "And I confirm the change",
+            "Then my organization's subscription should be updated, and billing adjusted accordingly."
+          ],
+          "edge_cases": [
+            "If downgrading would put me over the lead limit, the system should warn me and prompt me to archive/delete excess leads or prevent the downgrade."
+          ]
+        },
+        {
+          "story": "As an Organization Owner, I want to update my organization's basic information so that it is accurate.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to 'Organization Settings'",
+            "And I modify the organization name",
+            "And I save the changes",
+            "Then the organization's name should be updated across the platform."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "lead-source-config",
+      "name": "Lead Source Configuration",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As a Marketing Manager, I want to add a new lead capture source (e.g., a website form) so that I can automatically import leads.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Lead Sources'",
+            "And I select 'Add New Source' and choose 'Website Form'",
+            "And I provide a name for the source and configure necessary details (e.g., webhook URL, field mappings)",
+            "And I save the configuration",
+            "Then the new lead source should be active and ready to receive leads."
+          ],
+          "edge_cases": [
+            "If the configuration details are invalid (e.g., malformed webhook URL), the system should display an error."
+          ]
+        },
+        {
+          "story": "As a Marketing Manager, I want to configure integrations with external platforms (e.g., WhatsApp, Facebook Leads) so that leads are automatically captured.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Integrations'",
+            "And I select 'Connect WhatsApp'",
+            "And I follow the steps to authenticate and authorize the connection (e.g., scan QR code, provide API key)",
+            "Then the WhatsApp integration should be active, and new messages from configured numbers should be captured as leads."
+          ],
+          "edge_cases": [
+            "If the integration credentials are invalid or expire, the system should mark the integration as 'Disconnected' and notify the Marketing Manager."
+          ]
+        },
+        {
+          "story": "As a Marketing Manager, I want to view and edit existing lead source configurations so that I can update them as needed.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Lead Sources'",
+            "And I select an existing lead source",
+            "Then I should be able to view its current configuration.",
+            "And I should be able to modify its settings and save the changes."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Marketing Manager, I want to disable or delete a lead source so that I can stop capturing leads from it.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Lead Sources'",
+            "And I select an existing lead source",
+            "Then I should be able to disable it (pausing lead capture) or delete it entirely.",
+            "And if deleted, no new leads should be captured from that source."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "lead-capture",
+      "name": "Lead Capture",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As a Sales Representative, I want to manually add a new lead so that I can track leads from offline interactions or phone calls.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and logged in",
+            "When I navigate to 'Add New Lead'",
+            "And I fill in the lead's name, email, phone, company, product interest, and select a manual source",
+            "And I click 'Save Lead'",
+            "Then a new lead record should be created in the system.",
+            "And the AI qualification process should be initiated for this lead."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Marketing Manager, I want to import leads via CSV so that I can bulk upload existing lead lists.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Lead Import'",
+            "And I upload a CSV file with lead data (e.g., name, email, phone)",
+            "And I map the CSV columns to the system's lead fields",
+            "And I initiate the import",
+            "Then new lead records should be created for each valid row in the CSV.",
+            "And the AI qualification process should be initiated for each imported lead."
+          ],
+          "edge_cases": [
+            "If the CSV contains invalid data or duplicates, the system should report errors and allow me to review/correct or skip problematic rows.",
+            "If the import exceeds the organization's lead limit, the system should stop importing and notify the user."
+          ]
+        },
+        {
+          "story": "As the system, I want to automatically capture leads from configured sources (e.g., website forms, WhatsApp) so that no lead is missed.",
+          "acceptance_criteria": [
+            "Given a lead source (e.g., Website Form) is configured and active",
+            "When a new submission occurs via that source (e.g., form submission, WhatsApp message)",
+            "Then a new 'Lead' record should be created in the system with relevant data.",
+            "And the AI qualification process should be automatically initiated for this new lead.",
+            "And the organization's 'current_lead_count' should be incremented."
+          ],
+          "edge_cases": [
+            "If the incoming data is incomplete or malformed, the system should log the error and potentially create a partial lead or discard it based on configuration.",
+            "If the organization has reached its lead limit, the system should stop capturing new leads from automated sources and notify the Organization Owner."
+          ]
+        }
+      ]
+    },
+    {
+      "feature_id": "ai-lead-qualification",
+      "name": "AI Lead Qualification",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As the system, I want to automatically qualify new leads using AI so that sales representatives receive pre-scored leads.",
+          "acceptance_criteria": [
+            "Given a new 'Lead' record is created",
+            "When the AI qualification service processes the lead's data (e.g., initial message, product interest, source)",
+            "Then a 'LeadQualificationResult' record should be created, storing the AI's analysis (customer needs, budget, buying intent, urgency, location, product interest).",
+            "And the 'Lead''s 'qualification_score' and 'qualification_status' (Hot, Warm, Cold) should be updated based on the AI's output.",
+            "And if the lead is 'Hot', a notification should be sent to the assigned Sales Representative (or a pool of reps)."
+          ],
+          "edge_cases": [
+            "If the AI service fails or returns an error, the lead's qualification status should be marked as 'Pending' or 'Failed,' and an alert should be generated for a System Administrator.",
+            "If the lead data is insufficient for qualification, the system should mark it as 'Insufficient Data' and potentially prompt for manual review."
+          ]
+        },
+        {
+          "story": "As a Sales Representative, I want to view the AI qualification details for a lead so that I can understand their potential and tailor my approach.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and logged in",
+            "When I view a specific 'Lead''s details page",
+            "Then I should see the 'qualification_score' (0-100) and 'qualification_status' (Hot, Warm, Cold).",
+            "And I should see the detailed AI analysis (customer needs, budget, buying intent, urgency, location, product interest)."
+          ],
+          "edge_cases": [
+            "If a lead has not yet been qualified by AI, the system should display 'Qualification Pending' or 'Not Qualified.'"
+          ]
+        }
+      ]
+    },
+    {
+      "feature_id": "ai-followup-config",
+      "name": "AI Follow-Up Agent Configuration",
+      "priority": "medium",
+      "user_stories": [
+        {
+          "story": "As a Marketing Manager, I want to create new automated follow-up templates so that I can set up personalized communication sequences.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Follow-Up Templates'",
+            "And I click 'Create New Template'",
+            "And I define a template name, message body (with placeholders like '{{lead.name}}'), channel (Email/WhatsApp), and trigger conditions (e.g., 'Lead Status is Cold' AND 'Days Since Last Contact > 3')",
+            "And I save the template",
+            "Then the new follow-up template should be saved and appear in the list."
+          ],
+          "edge_cases": [
+            "If the template contains invalid placeholders, the system should warn me.",
+            "If the trigger conditions are ambiguous or conflicting with existing templates, the system should flag potential issues."
+          ]
+        },
+        {
+          "story": "As a Marketing Manager, I want to edit and activate/deactivate existing follow-up templates so that I can refine or pause automated sequences.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Follow-Up Templates'",
+            "And I select an existing template",
+            "Then I should be able to modify its name, message, channel, and trigger conditions.",
+            "And I should be able to toggle its 'is_active' status to enable or disable it.",
+            "And when I save changes, the template should be updated."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "ai-followup-execution",
+      "name": "AI Follow-Up Agent Execution",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As the system, I want to automatically send personalized follow-up messages based on configured templates and lead status so that leads are nurtured without manual intervention.",
+          "acceptance_criteria": [
+            "Given an active 'FollowUpTemplate' with specific trigger conditions (e.g., 'Lead Status is Cold' AND 'Days Since Last Contact > 3')",
+            "When a 'Lead' meets these conditions",
+            "Then the system should generate a personalized message using the template and lead data.",
+            "And send the message via the specified channel (Email/WhatsApp).",
+            "And a 'FollowUpMessage' record should be created, logging the sent message and its status.",
+            "And the 'Lead''s 'last_contacted_at' field should be updated."
+          ],
+          "edge_cases": [
+            "If sending fails (e.g., invalid email, WhatsApp API error), the 'FollowUpMessage' status should reflect 'Failed,' and an alert should be generated.",
+            "If a lead has opted out of communications, the system should not send follow-ups to them."
+          ]
+        },
+        {
+          "story": "As the system, I want to adjust follow-ups based on a lead's previous responses so that communication remains relevant.",
+          "acceptance_criteria": [
+            "Given a 'FollowUpMessage' has a 'response_received_at' and 'response_content'",
+            "When the AI analyzes the response content",
+            "Then the system should update the 'Lead''s 'qualification_status' or 'product_interest' if the response indicates a change.",
+            "And subsequent automated follow-ups should consider the updated lead status/interest, potentially triggering a different template or pausing the sequence."
+          ],
+          "edge_cases": [
+            "If the AI cannot interpret the response, the system should flag it for manual review."
+          ]
+        }
+      ]
+    },
+    {
+      "feature_id": "crm-pipeline-management",
+      "name": "Smart CRM Pipeline Management",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As an Organization Owner, I want to customize my CRM pipeline stages so that it matches my sales process.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to 'CRM Settings'",
+            "And I can add new stages, rename existing ones, and reorder them.",
+            "And I can designate initial and final (Won/Lost) stages.",
+            "And I save my changes",
+            "Then the CRM pipeline view should reflect the updated stages."
+          ],
+          "edge_cases": [
+            "I should not be able to delete a stage if leads are currently in it without first moving those leads."
+          ]
+        },
+        {
+          "story": "As a Sales Representative, I want to view all leads organized by their current CRM stage so that I can easily manage my pipeline.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and logged in",
+            "When I navigate to the 'CRM Pipeline'",
+            "Then I should see a visual representation of the pipeline (e.g., Kanban board) with columns for each 'CRMStage'.",
+            "And each column should display the leads currently in that stage, showing key information like name, score, and last contact."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want to move leads between CRM stages so that I can reflect their progress in the sales funnel.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing the CRM Pipeline",
+            "When I drag and drop a 'Lead' from one stage column to another",
+            "Then the 'Lead''s 'current_crm_stage_id' should be updated in the database.",
+            "And the lead should visually move to the new stage column."
+          ],
+          "edge_cases": [
+            "If moving a lead to a 'Won' or 'Lost' stage, the system should prompt for additional details (e.g., deal value, reason for loss)."
+          ]
+        },
+        {
+          "story": "As a Sales Representative, I want to assign a lead to myself or another team member so that responsibilities are clear.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing a 'Lead''s details or the pipeline",
+            "When I select a lead and choose to 'Assign'",
+            "And I select a 'User' from my organization",
+            "Then the 'Lead''s 'assigned_to_user_id' should be updated.",
+            "And the assigned user should receive a notification."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want to update a lead's details (e.g., contact info, product interest) so that I have the most current information.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing a 'Lead''s details page",
+            "When I edit any editable field (e.g., email, phone, notes)",
+            "And I save the changes",
+            "Then the 'Lead' record should be updated in the database."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want to mark a lead as 'Won' or 'Lost' so that I can track conversion outcomes.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing a 'Lead'",
+            "When I move the lead to a designated 'Won' or 'Lost' CRM stage",
+            "Then the 'Lead''s 'current_crm_stage_id' should be updated.",
+            "And the system should prompt for additional information like deal value (for 'Won') or reason for loss (for 'Lost').",
+            "And the lead should be removed from active pipeline views (or moved to an archived 'Won/Lost' view)."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "appointment-booking",
+      "name": "Appointment Booking",
+      "priority": "medium",
+      "user_stories": [
+        {
+          "story": "As a Sales Representative, I want to schedule an appointment with a lead so that I can move them further down the sales funnel.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing a 'Lead''s details page",
+            "When I click 'Schedule Appointment'",
+            "And I select a date, time, and duration for the appointment",
+            "And I can optionally add notes",
+            "And I save the appointment",
+            "Then an 'Appointment' record should be created, linked to the 'Lead' and my 'User' ID.",
+            "And the lead's 'current_crm_stage_id' might automatically update to 'Appointment Scheduled' if configured.",
+            "And the lead should receive an automated calendar invite/confirmation email."
+          ],
+          "edge_cases": [
+            "If there's a conflict with my existing calendar (if integrated), the system should warn me."
+          ]
+        },
+        {
+          "story": "As a Sales Representative, I want to view my upcoming appointments so that I can prepare for my meetings.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and logged in",
+            "When I navigate to the 'Appointments' section or my dashboard",
+            "Then I should see a list or calendar view of all my scheduled appointments, including lead name, time, and status."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want to mark an appointment as completed or cancelled so that my schedule and lead history are accurate.",
+          "acceptance_criteria": [
+            "Given I am a Sales Representative and viewing an 'Appointment'",
+            "When I click 'Mark as Completed' or 'Cancel Appointment'",
+            "Then the 'Appointment''s 'status' should be updated accordingly.",
+            "And if completed, I should be prompted to add follow-up notes or actions."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "followup-recovery",
+      "name": "Follow-Up Recovery (Lead Rescue Alert)",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As the system, I want to identify high-value leads that haven't been contacted recently so that no hot lead falls through the cracks.",
+          "acceptance_criteria": [
+            "Given a 'Lead' has a 'qualification_status' of 'Hot' or 'Warm'",
+            "And the 'Lead''s 'last_contacted_at' is older than a configurable threshold (e.g., 48 hours)",
+            "And there are no pending automated follow-ups for this lead",
+            "When the system runs its scheduled check",
+            "Then a 'Lead Rescue Alert' 'Notification' should be generated for the 'Lead''s 'assigned_to_user_id' (or Organization Owner if unassigned)."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want to receive alerts for high-value leads needing attention so that I can prioritize my follow-ups.",
+          "acceptance_criteria": [
+            "Given a 'Lead Rescue Alert' 'Notification' has been generated for me",
+            "When I log in or view my dashboard",
+            "Then I should see a prominent alert (e.g., in a 'Needs Attention' section) listing the leads, their value, and time since last contact.",
+            "And clicking on the alert should take me to the lead's details page."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Sales Representative, I want the system to recommend or initiate the next action for overdue leads so that I can quickly re-engage them.",
+          "acceptance_criteria": [
+            "Given I am viewing a 'Lead Rescue Alert' for an overdue lead",
+            "When I click on the alert or the 'Rescue Lead' button",
+            "Then the system should suggest actions (e.g., 'Send automated follow-up email,' 'Schedule a call,' 'Move to next stage').",
+            "And if I select 'Send automated follow-up email,' the system should trigger an appropriate automated follow-up based on templates.",
+            "And if I select 'Schedule a call,' it should open the appointment booking interface pre-filled with the lead's details."
+          ],
+          "edge_cases": []
+        }
+      ]
+    },
+    {
+      "feature_id": "dashboard-reporting",
+      "name": "Dashboard and Reporting",
+      "priority": "high",
+      "user_stories": [
+        {
+          "story": "As an Organization Owner, I want to see a high-level overview of my lead performance on a dashboard so that I can quickly assess business health.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to the main dashboard",
+            "Then I should see key metrics: Total Leads, Hot Leads, Warm Leads, Pipeline Value (sum of potential deal values for leads in active stages), Conversion Rate (Won Leads / Total Qualified Leads), AI Follow-ups Sent, and Appointments Scheduled.",
+            "And these metrics should be up-to-date and reflect data for my organization."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As an Organization Owner, I want to see a 'Needs Attention' section on my dashboard so that I can quickly identify critical leads requiring action.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I view the dashboard",
+            "Then I should see a 'Needs Attention' section.",
+            "And this section should list 'Hot' or 'Warm' leads that have not been contacted for a configurable period (e.g., 48+ hours), showing their name, potential value, and time since last contact.",
+            "And there should be a clear call to action (e.g., 'Rescue Leads' button) that allows me to review and act on these leads."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As a Marketing Manager, I want to view reports on lead source performance so that I can optimize my marketing spend.",
+          "acceptance_criteria": [
+            "Given I am a Marketing Manager and logged in",
+            "When I navigate to 'Reports' and select 'Lead Source Performance'",
+            "Then I should see a breakdown of leads captured per source, their average qualification score, and conversion rates.",
+            "And I should be able to filter this data by date range."
+          ],
+          "edge_cases": []
+        },
+        {
+          "story": "As an Organization Owner, I want to view reports on sales team performance so that I can identify top performers and areas for improvement.",
+          "acceptance_criteria": [
+            "Given I am an Organization Owner and logged in",
+            "When I navigate to 'Reports' and select 'Sales Team Performance'",
+            "Then I should see metrics per Sales Representative, such as leads assigned, leads contacted, appointments booked, and leads won/lost.",
+            "And I should be able to filter this data by date range."
+          ],
+          "edge_cases": []
+        }
+      ]
+    }
+  ]
+}
+
+
+===== Architecture Spec =====
+
+{
+  "architecture_overview": "The Lead Rescue AI platform will be built as a modern, scalable web application using a microservices-oriented approach. It features a Next.js frontend for a rich user experience, a FastAPI backend for high-performance API services and AI orchestration, and PostgreSQL as the primary data store. AI capabilities for lead qualification and automated follow-ups are central, leveraging OpenAI models and an asynchronous task queue for efficient processing.",
+  "technology_stack": {
+    "frontend": {
+      "technology": "Next.js",
+      "version": "14 (with React 18 and TypeScript)",
+      "justification": "Provides excellent developer experience, server-side rendering for performance, and a robust ecosystem for building complex UIs."
+    },
+    "backend": {
+      "technology": "FastAPI",
+      "version": "0.110+ (with Python 3.11+)",
+      "justification": "Offers high performance, asynchronous capabilities, strong type hints, and is ideal for integrating AI/ML models and handling I/O-bound tasks efficiently."
+    },
+    "database": {
+      "technology": "PostgreSQL",
+      "version": "16+",
+      "justification": "A highly reliable, scalable, and feature-rich relational database, well-suited for complex data models, transactional integrity, and JSONB support."
+    }
+  },
+  "system_components": [
+    {
+      "component_name": "Next.js Frontend Application",
+      "responsibility": "Handles user interface rendering, client-side routing, user input, and communicates with the Backend API and Real-time Service.",
+      "interacts_with": [
+        "Backend API Service",
+        "Real-time Notification Service"
+      ]
+    },
+    {
+      "component_name": "FastAPI Backend API Service",
+      "responsibility": "Manages core business logic, user authentication/authorization, data persistence, external integrations (Stripe, Twilio, Resend), and orchestrates AI tasks.",
+      "interacts_with": [
+        "PostgreSQL Database",
+        "Celery Task Queue",
+        "AI Qualification Service",
+        "AI Follow-up Service",
+        "Real-time Notification Service",
+        "External APIs (Stripe, Twilio, Resend)"
+      ]
+    },
+    {
+      "component_name": "PostgreSQL Database",
+      "responsibility": "Stores all application data including users, organizations, leads, lead sources, CRM stages, appointments, subscription details, and AI qualification results.",
+      "interacts_with": [
+        "FastAPI Backend API Service",
+        "Celery Worker (for direct data access in background tasks)"
+      ]
+    },
+    {
+      "component_name": "Celery Task Queue & Workers",
+      "responsibility": "Processes asynchronous and long-running tasks such as AI lead qualification, bulk lead imports (CSV), automated follow-up execution, and scheduled checks (e.g., Lead Rescue Alerts).",
+      "interacts_with": [
+        "FastAPI Backend API Service",
+        "PostgreSQL Database",
+        "AI Qualification Service",
+        "AI Follow-up Service",
+        "External APIs (Twilio, Resend)"
+      ]
+    },
+    {
+      "component_name": "AI Qualification Service",
+      "responsibility": "Receives lead data from the Celery Task Queue, interacts with OpenAI to analyze lead potential, and updates lead qualification status and details in the database.",
+      "interacts_with": [
+        "Celery Task Queue",
+        "PostgreSQL Database",
+        "OpenAI API"
+      ]
+    },
+    {
+      "component_name": "AI Follow-up Service",
+      "responsibility": "Receives follow-up tasks from the Celery Task Queue, generates personalized messages using OpenAI, sends messages via email/WhatsApp, and analyzes lead responses to update lead status.",
+      "interacts_with": [
+        "Celery Task Queue",
+        "PostgreSQL Database",
+        "OpenAI API",
+        "External APIs (Twilio, Resend)"
+      ]
+    },
+    {
+      "component_name": "Real-time Notification Service (Socket.io)",
+      "responsibility": "Pushes real-time updates to connected clients for events like new lead rescue alerts, pipeline changes, and new lead captures.",
+      "interacts_with": [
+        "FastAPI Backend API Service",
+        "Next.js Frontend Application"
+      ]
+    }
+  ],
+  "non_functional_requirements": [
+    {
+      "category": "Performance",
+      "requirement": "API response times for critical user-facing operations (e.g., dashboard load, lead details view) shall be under 200ms for 95% of requests."
+    },
+    {
+      "category": "Scalability",
+      "requirement": "The system shall support 10,000 concurrent active users and process 100 new leads per minute without degradation in performance."
+    },
+    {
+      "category": "Security",
+      "requirement": "All data in transit shall be encrypted using TLS 1.2+ and sensitive data at rest (e.g., API keys, PII) shall be encrypted using AES-256."
+    },
+    {
+      "category": "Reliability",
+      "requirement": "The core application services (Frontend, Backend API, Database) shall maintain an uptime of 99.9% monthly."
+    },
+    {
+      "category": "Data Integrity",
+      "requirement": "Lead data consistency across all related entities (qualification results, follow-ups, CRM stages) shall be maintained through ACID-compliant database transactions."
+    }
+  ]
+}
+
+
+===== Database Schema =====
+
+{
+  "database_type": "PostgreSQL",
+  "tables": [
+    {
+      "table_name": "subscription_plans",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "description",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "monthly_price",
+          "type": "DECIMAL(10, 2)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "0.00",
+          "on_delete": null
+        },
+        {
+          "name": "lead_limit",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "0",
+          "on_delete": null
+        },
+        {
+          "name": "user_limit",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "1",
+          "on_delete": null
+        },
+        {
+          "name": "features",
+          "type": "JSONB",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'[]'",
+          "on_delete": null,
+          "json_schema": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "description": "A feature included in the subscription plan, e.g., 'Unlimited Leads', 'AI Qualification', 'WhatsApp Integration'"
+            }
+          }
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "name"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "organizations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "owner_user_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "users.id",
+          "default": null,
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "subscription_plan_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "subscription_plans.id",
+          "default": null,
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "current_lead_count",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "0",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "owner_user_id",
+        "subscription_plan_id"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "password_hash",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "role",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'Sales Representative'",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "email",
+        "organization_id",
+        "role"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "crm_stages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "order_index",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "is_initial",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "FALSE",
+          "on_delete": null
+        },
+        {
+          "name": "is_final_won",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "FALSE",
+          "on_delete": null
+        },
+        {
+          "name": "is_final_lost",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "FALSE",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "organization_id",
+        "order_index",
+        "[organization_id, name]"
+      ],
+      "constraints": [
+        "UNIQUE (organization_id, name)",
+        "UNIQUE (organization_id, order_index)"
+      ]
+    },
+    {
+      "table_name": "lead_sources",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "configuration",
+          "type": "JSONB",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'{}'",
+          "on_delete": null,
+          "json_schema": {
+            "type": "object",
+            "description": "Configuration details for the lead source, varies by source type.",
+            "properties": {
+              "webhook_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL for webhook-based lead capture"
+              },
+              "field_mappings": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-zA-Z0-9_]+$": {
+                    "type": "string",
+                    "description": "Maps an incoming field name to a lead table column name"
+                  }
+                },
+                "description": "Mapping of incoming data fields to lead table columns"
+              },
+              "api_key": {
+                "type": "string",
+                "description": "API key for external service integration"
+              },
+              "phone_number_id": {
+                "type": "string",
+                "description": "Identifier for WhatsApp phone number"
+              },
+              "access_token": {
+                "type": "string",
+                "description": "Access token for Facebook integration"
+              },
+              "page_id": {
+                "type": "string",
+                "description": "Facebook Page ID"
+              },
+              "form_id": {
+                "type": "string",
+                "description": "Facebook Lead Ad Form ID"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "TRUE",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "organization_id",
+        "type",
+        "[organization_id, name]"
+      ],
+      "constraints": [
+        "UNIQUE (organization_id, name)"
+      ]
+    },
+    {
+      "table_name": "leads",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "email",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "phone",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "company",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "product_interest",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "source_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "lead_sources.id",
+          "default": null,
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "qualification_score",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "0",
+          "on_delete": null
+        },
+        {
+          "name": "qualification_status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'Pending'",
+          "on_delete": null
+        },
+        {
+          "name": "current_crm_stage_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "crm_stages.id",
+          "default": null,
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "assigned_to_user_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": "users.id",
+          "default": null,
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "last_contacted_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "deal_value",
+          "type": "DECIMAL(10, 2)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "reason_for_loss",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "opt_out_communications",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "FALSE",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "organization_id",
+        "source_id",
+        "qualification_status",
+        "current_crm_stage_id",
+        "assigned_to_user_id",
+        "last_contacted_at",
+        "email",
+        "phone"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "lead_qualification_results",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "lead_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": "leads.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "analysis_data",
+          "type": "JSONB",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'{}'",
+          "on_delete": null,
+          "json_schema": {
+            "type": "object",
+            "properties": {
+              "customer_needs": {
+                "type": "string"
+              },
+              "budget": {
+                "type": "string"
+              },
+              "buying_intent": {
+                "type": "string"
+              },
+              "urgency": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "product_interest": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string",
+                "description": "A brief AI-generated summary of the lead's potential"
+              }
+            },
+            "required": [
+              "customer_needs",
+              "buying_intent",
+              "urgency",
+              "product_interest"
+            ],
+            "additionalProperties": true
+          }
+        },
+        {
+          "name": "qualification_score",
+          "type": "INTEGER",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "0",
+          "on_delete": null
+        },
+        {
+          "name": "qualification_status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'Pending'",
+          "on_delete": null
+        },
+        {
+          "name": "ai_model_used",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "processed_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "lead_id",
+        "qualification_status",
+        "processed_at"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "follow_up_templates",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "name",
+          "type": "VARCHAR(255)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "message_body",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "channel",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "trigger_conditions",
+          "type": "JSONB",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'{}'",
+          "on_delete": null,
+          "json_schema": {
+            "type": "object",
+            "description": "Conditions that trigger this follow-up template.",
+            "properties": {
+              "lead_status": {
+                "type": "string",
+                "enum": [
+                  "Hot",
+                  "Warm",
+                  "Cold",
+                  "Pending",
+                  "Insufficient Data",
+                  "Failed"
+                ]
+              },
+              "days_since_last_contact_gt": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Days since last contact greater than this value"
+              },
+              "days_since_creation_gt": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Days since lead creation greater than this value"
+              },
+              "product_interest_contains": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "crm_stage_id": {
+                "type": "string",
+                "format": "uuid",
+                "description": "Specific CRM stage ID"
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        {
+          "name": "is_active",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "TRUE",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "organization_id",
+        "is_active",
+        "[organization_id, name]"
+      ],
+      "constraints": [
+        "UNIQUE (organization_id, name)"
+      ]
+    },
+    {
+      "table_name": "follow_up_messages",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "lead_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "leads.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "template_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": "follow_up_templates.id",
+          "default": null,
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "sent_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "message_content",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "channel",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'Sent'",
+          "on_delete": null
+        },
+        {
+          "name": "response_received_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "response_content",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "lead_id",
+        "template_id",
+        "sent_at",
+        "status"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "appointments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "lead_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "leads.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "scheduled_by_user_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "users.id",
+          "default": null,
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "start_time",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "end_time",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "notes",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "status",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "'Scheduled'",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "lead_id",
+        "scheduled_by_user_id",
+        "start_time",
+        "status"
+      ],
+      "constraints": []
+    },
+    {
+      "table_name": "notifications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "UUID",
+          "primary_key": true,
+          "nullable": false,
+          "unique": true,
+          "foreign_key": null,
+          "default": "uuid_generate_v4()",
+          "on_delete": null
+        },
+        {
+          "name": "user_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "users.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "organization_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": "organizations.id",
+          "default": null,
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "type",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "message",
+          "type": "TEXT",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "related_entity_id",
+          "type": "UUID",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "related_entity_type",
+          "type": "VARCHAR(50)",
+          "primary_key": false,
+          "nullable": true,
+          "unique": false,
+          "foreign_key": null,
+          "default": null,
+          "on_delete": null
+        },
+        {
+          "name": "is_read",
+          "type": "BOOLEAN",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "FALSE",
+          "on_delete": null
+        },
+        {
+          "name": "created_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        },
+        {
+          "name": "updated_at",
+          "type": "TIMESTAMP WITH TIME ZONE",
+          "primary_key": false,
+          "nullable": false,
+          "unique": false,
+          "foreign_key": null,
+          "default": "NOW()",
+          "on_delete": null
+        }
+      ],
+      "indexes": [
+        "user_id",
+        "organization_id",
+        "type",
+        "is_read",
+        "created_at"
+      ],
+      "constraints": []
+    }
+  ],
+  "relationships": [
+    {
+      "from_table": "organizations",
+      "to_table": "users",
+      "type": "one-to-many",
+      "foreign_key": "owner_user_id",
+      "on_delete": "RESTRICT"
+    },
+    {
+      "from_table": "organizations",
+      "to_table": "subscription_plans",
+      "type": "many-to-one",
+      "foreign_key": "subscription_plan_id",
+      "on_delete": "RESTRICT"
+    },
+    {
+      "from_table": "users",
+      "to_table": "organizations",
+      "type": "many-to-one",
+      "foreign_key": "organization_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "crm_stages",
+      "to_table": "organizations",
+      "type": "many-to-one",
+      "foreign_key": "organization_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "lead_sources",
+      "to_table": "organizations",
+      "type": "many-to-one",
+      "foreign_key": "organization_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "leads",
+      "to_table": "organizations",
+      "type": "many-to-one",
+      "foreign_key": "organization_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "leads",
+      "to_table": "lead_sources",
+      "type": "many-to-one",
+      "foreign_key": "source_id",
+      "on_delete": "RESTRICT"
+    },
+    {
+      "from_table": "leads",
+      "to_table": "crm_stages",
+      "type": "many-to-one",
+      "foreign_key": "current_crm_stage_id",
+      "on_delete": "RESTRICT"
+    },
+    {
+      "from_table": "leads",
+      "to_table": "users",
+      "type": "many-to-one",
+      "foreign_key": "assigned_to_user_id",
+      "on_delete": "SET NULL"
+    },
+    {
+      "from_table": "lead_qualification_results",
+      "to_table": "leads",
+      "type": "one-to-one",
+      "foreign_key": "lead_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "follow_up_templates",
+      "to_table": "organizations",
+      "type": "many-to-one",
+      "foreign_key": "organization_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "follow_up_messages",
+      "to_table": "leads",
+      "type": "many-to-one",
+      "foreign_key": "lead_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "follow_up_messages",
+      "to_table": "follow_up_templates",
+      "type": "many-to-one",
+      "foreign_key": "template_id",
+      "on_delete": "SET NULL"
+    },
+    {
+      "from_table": "appointments",
+      "to_table": "leads",
+      "type": "many-to-one",
+      "foreign_key": "lead_id",
+      "on_delete": "CASCADE"
+    },
+    {
+      "from_table": "appointments",
+      "to_table
