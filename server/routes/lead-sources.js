@@ -45,6 +45,10 @@ router.post('/', async (req, res) => {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (!['Organization Owner', 'Marketing Manager'].includes(session.role)) {
+      return res.status(403).json({ error: 'Only Organization Owners and Marketing Managers can add lead sources.' });
+    }
+
     const { name, type, configuration } = req.body;
 
     if (!name || !type) {
@@ -88,6 +92,10 @@ router.put('/:id', async (req, res) => {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (!['Organization Owner', 'Marketing Manager'].includes(session.role)) {
+      return res.status(403).json({ error: 'Only Organization Owners and Marketing Managers can edit lead sources.' });
+    }
+
     const { name, type, configuration, is_active } = req.body;
 
     const src = await get('SELECT id FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
@@ -100,13 +108,14 @@ router.put('/:id', async (req, res) => {
            configuration = COALESCE(?, configuration),
            is_active = COALESCE(?, is_active),
            updated_at = NOW()
-       WHERE id = ?`,
+       WHERE id = ? AND organization_id = ?`,
       [
         name ?? null,
         type ?? null,
         configuration ? JSON.stringify(configuration) : null,
         is_active !== undefined ? (is_active ? 1 : 0) : null,
-        req.params.id
+        req.params.id,
+        session.organization_id
       ]
     );
 
@@ -123,10 +132,14 @@ router.delete('/:id', async (req, res) => {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (!['Organization Owner', 'Marketing Manager'].includes(session.role)) {
+      return res.status(403).json({ error: 'Only Organization Owners and Marketing Managers can delete lead sources.' });
+    }
+
     const src = await get('SELECT id FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
     if (!src) return res.status(404).json({ error: 'Lead source not found.' });
 
-    await run('DELETE FROM lead_sources WHERE id = ?', [req.params.id]);
+    await run('DELETE FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
 
     return res.json({ message: 'Lead source deleted successfully.' });
   } catch (err) {

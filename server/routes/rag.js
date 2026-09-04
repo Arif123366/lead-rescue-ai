@@ -34,6 +34,10 @@ router.post('/knowledge', async (req, res) => {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
 
+    if (!['Organization Owner', 'Marketing Manager'].includes(session.role)) {
+      return res.status(403).json({ error: 'Only Organization Owners and Marketing Managers can add RAG knowledge.' });
+    }
+
     const { title, content, category } = req.body;
     if (!title || !content) {
       return res.status(400).json({ error: 'title and content are required.' });
@@ -62,6 +66,10 @@ router.delete('/knowledge', async (req, res) => {
   try {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (!['Organization Owner', 'Marketing Manager'].includes(session.role)) {
+      return res.status(403).json({ error: 'Only Organization Owners and Marketing Managers can delete RAG knowledge.' });
+    }
 
     const id = req.query.id;
     if (!id) return res.status(400).json({ error: 'id is required.' });

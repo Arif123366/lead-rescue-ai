@@ -110,9 +110,13 @@ async function ensureSchema() {
  * Converts SQLite `?` positional placeholders → PostgreSQL `$1, $2 …`
  */
 function normalizeSql(sql: string): string {
-  if (!isPostgres) return sql;
-  let i = 1;
-  return sql.replace(/\?/g, () => `$${i++}`);
+  let cleaned = sql;
+  if (isPostgres) {
+    cleaned = cleaned.replace(/datetime\('now'\)/gi, 'NOW()');
+    let i = 1;
+    cleaned = cleaned.replace(/\?/g, () => `$${i++}`);
+  }
+  return cleaned;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────

@@ -154,7 +154,7 @@ export async function qualifyLead(input: LeadQualificationInput): Promise<Qualif
 
   // Update lead record
   await run(
-    `UPDATE leads SET qualification_score = ?, qualification_status = ?, updated_at = datetime('now') WHERE id = ?`,
+    `UPDATE leads SET qualification_score = ?, qualification_status = ?, updated_at = NOW() WHERE id = ?`,
     [result.score, result.status, input.leadId]
   );
 

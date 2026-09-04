@@ -59,14 +59,14 @@ router.post('/action', async (req, res) => {
       resultMessage = `Follow-up sent via ${resMsg.channel}.`;
     } else if (action_type === 'reassign') {
       const targetUserId = new_user_id || session.id;
-      await run("UPDATE leads SET assigned_to_user_id = ?, updated_at = NOW() WHERE id = ?", [targetUserId, lead_id]);
+      await run("UPDATE leads SET assigned_to_user_id = ?, updated_at = NOW() WHERE id = ? AND organization_id = ?", [targetUserId, lead_id, session.organization_id]);
       resultMessage = 'Lead reassigned successfully.';
     } else if (action_type === 'mark_contacted') {
-      await run("UPDATE leads SET last_contacted_at = NOW(), updated_at = NOW() WHERE id = ?", [lead_id]);
+      await run("UPDATE leads SET last_contacted_at = NOW(), updated_at = NOW() WHERE id = ? AND organization_id = ?", [lead_id, session.organization_id]);
       resultMessage = 'Lead last contacted timestamp updated.';
     }
 
-    await run("UPDATE notifications SET is_read = 1 WHERE related_entity_id = ? AND type = 'LEAD_RESCUE_ALERT'", [lead_id]);
+    await run("UPDATE notifications SET is_read = 1 WHERE related_entity_id = ? AND organization_id = ? AND type = 'LEAD_RESCUE_ALERT'", [lead_id, session.organization_id]);
 
     return res.json({
       message: 'Lead rescue action executed successfully.',

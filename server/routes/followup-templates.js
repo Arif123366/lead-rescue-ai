@@ -89,14 +89,15 @@ router.put('/:id', async (req, res) => {
            trigger_conditions = COALESCE(?, trigger_conditions),
            is_active = COALESCE(?, is_active),
            updated_at = NOW()
-       WHERE id = ?`,
+       WHERE id = ? AND organization_id = ?`,
       [
         name ?? null,
         message_body ?? null,
         channel ?? null,
         trigger_conditions ? JSON.stringify(trigger_conditions) : null,
         is_active !== undefined ? (is_active ? 1 : 0) : null,
-        req.params.id
+        req.params.id,
+        session.organization_id
       ]
     );
 
@@ -116,7 +117,7 @@ router.delete('/:id', async (req, res) => {
     const tpl = await get('SELECT id FROM follow_up_templates WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
     if (!tpl) return res.status(404).json({ error: 'Template not found.' });
 
-    await run('DELETE FROM follow_up_templates WHERE id = ?', [req.params.id]);
+    await run('DELETE FROM follow_up_templates WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
 
     return res.json({ message: 'Template deleted successfully.' });
   } catch (err) {

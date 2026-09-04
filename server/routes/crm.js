@@ -164,7 +164,7 @@ router.delete('/stages', async (req, res) => {
     const stageId = req.query.id;
     if (!stageId) return res.status(400).json({ error: 'Stage ID required.' });
 
-    const leadsInStage = await get('SELECT COUNT(*) as count FROM leads WHERE current_crm_stage_id = ?', [stageId]);
+    const leadsInStage = await get('SELECT COUNT(*) as count FROM leads WHERE current_crm_stage_id = ? AND organization_id = ?', [stageId, session.organization_id]);
     if (leadsInStage && parseInt(leadsInStage.count, 10) > 0) {
       return res.status(400).json({
         error: `Cannot delete stage because there are ${leadsInStage.count} leads currently in it. Move those leads to another stage first.`

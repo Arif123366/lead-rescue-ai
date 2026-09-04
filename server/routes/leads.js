@@ -230,19 +230,26 @@ router.post('/import', async (req, res) => {
 
     await run('UPDATE organizations SET current_lead_count = current_lead_count + ? WHERE id = ?', [importedCount, session.organization_id]);
 
-    Promise.all(
-      leadIdsToQualify.map(item =>
-        qualifyLead({
-          leadId: item.id,
-          name: item.name,
-          email: item.email,
-          phone: item.phone,
-          company: item.company,
-          product_interest: item.product_interest,
-          source_name: 'CSV Bulk Upload'
-        }).catch(err => console.error('Bulk qualification error:', err))
-      )
-    ).catch(err => console.error('Bulk import qualification error:', err));
+    // Controlled batch processing for AI qualification to avoid rate limits
+    (async () => {
+      const BATCH_SIZE = 3;
+      for (let i = 0; i < leadIdsToQualify.length; i += BATCH_SIZE) {
+        const batch = leadIdsToQualify.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map((item) =>
+            qualifyLead({
+              leadId: item.id,
+              name: item.name,
+              email: item.email,
+              phone: item.phone,
+              company: item.company,
+              product_interest: item.product_interest,
+              source_name: 'CSV Upload',
+            }).catch((err) => console.error(`[csv import] AI qualification error for lead ${item.id}:`, err))
+          )
+        );
+      }
+    })().catch((err) => console.error('[csv import batch runner] Error:', err));
 
     return res.json({
       message: `Successfully imported ${importedCount} leads. AI qualification in progress.`,
