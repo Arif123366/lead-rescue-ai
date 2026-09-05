@@ -140,8 +140,8 @@ export async function qualifyLead(input: LeadQualificationInput): Promise<Qualif
   await run('DELETE FROM lead_qualification_results WHERE lead_id = ?', [input.leadId]);
 
   await run(
-    `INSERT INTO lead_qualification_results (id, lead_id, analysis_data, qualification_score, qualification_status, ai_model_used)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO lead_qualification_results (id, lead_id, analysis_data, qualification_score, qualification_status, ai_model_used, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, NOW())`,
     [
       crypto.randomUUID(),
       input.leadId,
@@ -173,8 +173,8 @@ export async function qualifyLead(input: LeadQualificationInput): Promise<Qualif
 
     if (notifyUserId) {
       await run(
-        `INSERT INTO notifications (id, user_id, organization_id, type, message, related_entity_id, related_entity_type)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO notifications (id, user_id, organization_id, type, message, related_entity_id, related_entity_type, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           crypto.randomUUID(),
           notifyUserId,

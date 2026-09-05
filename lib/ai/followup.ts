@@ -52,8 +52,8 @@ export async function sendFollowUp(input: ExecuteFollowUpInput) {
 
   // Record outbound message in DB
   await run(
-    `INSERT INTO follow_up_messages (id, lead_id, template_id, sent_at, message, message_content, channel, status, direction)
-     VALUES (?, ?, ?, datetime('now'), ?, ?, ?, ?, 'Outbound')`,
+    `INSERT INTO follow_up_messages (id, lead_id, template_id, sent_at, message, message_content, channel, status, direction, created_at)
+     VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, 'Outbound', NOW())`,
     [messageId, input.leadId, input.templateId || null, finalMessage, finalMessage, channel, 'Pending']
   );
 
@@ -167,14 +167,14 @@ export async function processInboundResponse(leadId: string, responseContent: st
   const newScore = Math.min(100, Math.max(0, (lead.qualification_score || 0) + scoreAdjustment));
 
   await run(
-    `UPDATE leads SET qualification_score = ?, qualification_status = ?, last_contacted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`,
+    `UPDATE leads SET qualification_score = ?, qualification_status = ?, last_contacted_at = NOW(), updated_at = NOW() WHERE id = ?`,
     [newScore, updatedStatus, leadId]
   );
 
   // Log inbound response
   await run(
-    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, channel, status, direction)
-     VALUES (?, ?, datetime('now'), ?, 'Email', 'Received', 'Inbound')`,
+    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, channel, status, direction, created_at)
+     VALUES (?, ?, NOW(), ?, 'Email', 'Received', 'Inbound', NOW())`,
     [crypto.randomUUID(), leadId, responseContent]
   );
 

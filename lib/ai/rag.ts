@@ -35,7 +35,7 @@ export async function addRagKnowledgeDocument(params: {
 
     await run(
       `INSERT INTO organization_rag_knowledge (id, organization_id, title, content_chunk, category, keywords, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`,
+       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [id, params.organizationId, chunkTitle, chunkTextContent, category, keywords]
     );
 
