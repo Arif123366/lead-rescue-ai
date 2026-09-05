@@ -33,7 +33,7 @@ router.post('/checkout', async (req, res) => {
     const targetPlan = await get('SELECT * FROM subscription_plans WHERE id = ?', [plan_id]);
     if (!targetPlan) return res.status(404).json({ error: 'Selected subscription plan not found.' });
 
-    const originUrl = req.headers.origin || process.env.APP_URL || 'http://localhost:3000';
+    const originUrl = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : (process.env.APP_URL || 'https://leadrescueai.xilxil.com');
 
     if (provider === 'stripe') {
       const result = await createStripeCheckoutSession({
@@ -79,7 +79,7 @@ router.get('/checkout/confirm', async (req, res) => {
   try {
     const sessionId = req.query.session_id;
     const provider = req.query.provider || 'stripe';
-    const frontendUrl = process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS?.split(',')[0] || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS?.split(',')[0] || 'https://leadrescueai.xilxil.com';
 
     if (!sessionId) {
       return res.redirect(`${frontendUrl}/settings?tab=billing&payment=error`);

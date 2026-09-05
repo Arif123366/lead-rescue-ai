@@ -85,7 +85,7 @@ export async function qualifyLead(input: LeadQualificationInput): Promise<Qualif
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          'HTTP-Referer': process.env.APP_URL || 'http://localhost:3000',
+          'HTTP-Referer': process.env.APP_URL || 'https://leadrescueai.xilxil.com',
           'X-Title': 'Lead Rescue AI',
         },
         body: JSON.stringify({

@@ -6,7 +6,7 @@
  * - In development: logs email details + token URLs to console
  */
 
-const APP_URL = process.env.APP_URL || 'http://localhost:3000';
+const APP_URL = process.env.APP_URL || 'https://leadrescueai.xilxil.com';
 const FROM_EMAIL = process.env.EMAIL_FROM || process.env.RESEND_FROM_DOMAIN || 'Lead Rescue AI <notifications@leadrescue.ai>';
 
 interface EmailPayload {

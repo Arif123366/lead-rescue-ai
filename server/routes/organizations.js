@@ -169,7 +169,7 @@ router.post('/team', async (req, res) => {
       console.error('[team invite] Email send failed:', emailErr);
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
+    const appUrl = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : (process.env.APP_URL || 'https://leadrescueai.xilxil.com');
     const inviteUrl = `${appUrl}/accept-invite?token=${rawToken}`;
 
     return res.status(201).json({
