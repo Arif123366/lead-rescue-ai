@@ -52,8 +52,8 @@ export async function sendFollowUp(input: ExecuteFollowUpInput) {
 
   // Record outbound message in DB
   await run(
-    `INSERT INTO follow_up_messages (id, lead_id, template_id, sent_at, message, message_content, channel, status, direction, created_at)
-     VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, 'Outbound', NOW())`,
+    `INSERT INTO follow_up_messages (id, lead_id, template_id, sent_at, message, message_content, channel, status, direction, created_at, updated_at)
+     VALUES (?, ?, ?, NOW(), ?, ?, ?, ?, 'Outbound', NOW(), NOW())`,
     [messageId, input.leadId, input.templateId || null, finalMessage, finalMessage, channel, 'Pending']
   );
 
@@ -173,8 +173,8 @@ export async function processInboundResponse(leadId: string, responseContent: st
 
   // Log inbound response
   await run(
-    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, channel, status, direction, created_at)
-     VALUES (?, ?, NOW(), ?, 'Email', 'Received', 'Inbound', NOW())`,
+    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, channel, status, direction, created_at, updated_at)
+     VALUES (?, ?, NOW(), ?, 'Email', 'Received', 'Inbound', NOW(), NOW())`,
     [crypto.randomUUID(), leadId, responseContent]
   );
 
