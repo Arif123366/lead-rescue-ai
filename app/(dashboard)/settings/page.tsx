@@ -68,8 +68,20 @@ export default function SettingsPage() {
 
   const fetchSettingsData = async () => {
     try {
-      const [resMe, resTeam, resSources, resSub, resOrg, resRag, resCrm] = await Promise.all([
-        apiFetch('/api/v1/auth/me'),
+      // 1. Fetch user session first to set role and unblock UI loading state fast
+      const meRes = await apiFetch('/api/v1/auth/me').catch(() => null);
+      if (meRes?.ok) {
+        const meJson = await meRes.json().catch(() => null);
+        const role = meJson?.user?.role || 'Organization Owner';
+        setUserRole(role);
+        if (role === 'Marketing Manager') setActiveTab('sources');
+        if (role === 'Sales Representative') setActiveTab('rag');
+      }
+
+      setLoading(false); // Unblock full-screen loading immediately!
+
+      // 2. Fetch remaining settings data concurrently with Promise.allSettled
+      const [resTeam, resSources, resSub, resOrg, resRag, resCrm] = await Promise.allSettled([
         apiFetch('/api/v1/organizations/team'),
         apiFetch('/api/v1/lead-sources'),
         apiFetch('/api/v1/organizations/subscription'),
@@ -78,30 +90,43 @@ export default function SettingsPage() {
         apiFetch('/api/v1/crm-connectors')
       ]);
 
-      if (resMe.ok) {
-        const meJson = await resMe.json();
-        const role = meJson.user?.role || 'Organization Owner';
-        setUserRole(role);
-        if (role === 'Marketing Manager') setActiveTab('sources');
-        if (role === 'Sales Representative') setActiveTab('rag');
+      if (resTeam.status === 'fulfilled' && resTeam.value.ok) {
+        const teamJson = await resTeam.value.json().catch(() => null);
+        if (teamJson) {
+          setTeam(teamJson.team || []);
+          setPendingInvites(teamJson.pending_invitations || []);
+        }
       }
 
-      if (resTeam.ok) {
-        const teamJson = await resTeam.json();
-        setTeam(teamJson.team || []);
-        setPendingInvites(teamJson.pending_invitations || []);
+      if (resSources.status === 'fulfilled' && resSources.value.ok) {
+        const json = await resSources.value.json().catch(() => null);
+        if (json) setSources(json.sources || []);
       }
-      if (resSources.ok) setSources((await resSources.json()).sources || []);
-      if (resSub.ok) setSubscription(await resSub.json());
-      if (resOrg.ok) {
-        const orgData = (await resOrg.json()).organization;
-        setOrg(orgData);
-        if (orgData) setOrgName(orgData.name);
+
+      if (resSub.status === 'fulfilled' && resSub.value.ok) {
+        const json = await resSub.value.json().catch(() => null);
+        if (json) setSubscription(json);
       }
-      if (resRag.ok) setRagDocs((await resRag.json()).knowledge_base || []);
-      if (resCrm.ok) setCrmConnectors((await resCrm.json()).connectors || []);
+
+      if (resOrg.status === 'fulfilled' && resOrg.value.ok) {
+        const json = await resOrg.value.json().catch(() => null);
+        if (json?.organization) {
+          setOrg(json.organization);
+          setOrgName(json.organization.name);
+        }
+      }
+
+      if (resRag.status === 'fulfilled' && resRag.value.ok) {
+        const json = await resRag.value.json().catch(() => null);
+        if (json) setRagDocs(json.knowledge_base || []);
+      }
+
+      if (resCrm.status === 'fulfilled' && resCrm.value.ok) {
+        const json = await resCrm.value.json().catch(() => null);
+        if (json) setCrmConnectors(json.connectors || []);
+      }
     } catch (err) {
-      console.error(err);
+      console.error('[fetchSettingsData error]', err);
     } finally {
       setLoading(false);
     }
@@ -356,7 +381,58 @@ export default function SettingsPage() {
     lead_limit: currentSubscription.lead_limit || 1000,
     name: currentSubscription.plan_name || 'Standard'
   };
-  const availablePlans = subscription?.available_plans || [];
+
+  const defaultFallbackPlans = [
+    {
+      id: 'plan_starter',
+      name: 'Starter Plan',
+      monthly_price: 49,
+      description: 'Perfect for small sales teams recovering cold leads.',
+      lead_limit: 1000,
+      user_limit: 5,
+      features: [
+        'Up to 1,000 Rescued Leads/mo',
+        '5 Team Member Seats',
+        'Autonomous AI Lead Qualification',
+        'Webhooks & Lead Capture',
+        'Standard Follow-Up Templates'
+      ]
+    },
+    {
+      id: 'plan_growth',
+      name: 'Growth Plan',
+      monthly_price: 149,
+      description: 'For growing companies scaling multi-channel lead recovery.',
+      lead_limit: 5000,
+      user_limit: 15,
+      features: [
+        'Up to 5,000 Rescued Leads/mo',
+        '15 Team Member Seats',
+        'Multi-Channel (Email, SMS, WhatsApp)',
+        'Custom RAG Knowledge Base Sync',
+        'External CRM Pipeline Connectors'
+      ]
+    },
+    {
+      id: 'plan_enterprise',
+      name: 'Enterprise Plan',
+      monthly_price: 499,
+      description: 'Maximum pipeline velocity and dedicated AI model tuning.',
+      lead_limit: 50000,
+      user_limit: 100,
+      features: [
+        'Unlimited Rescued Leads & Seats',
+        'Dedicated Custom AI Fine-Tuning',
+        '24/7 SLA & Priority Support',
+        'Custom Webhook & API Connectors',
+        'Dedicated Account Strategist'
+      ]
+    }
+  ];
+
+  const availablePlans = (subscription?.available_plans && subscription.available_plans.length > 0)
+    ? subscription.available_plans
+    : defaultFallbackPlans;
 
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col">

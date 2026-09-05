@@ -193,7 +193,7 @@ export default function CrmPipelinePage() {
                           </span>
                         </div>
                         <span className="text-[10px] text-emerald-400 font-mono font-semibold block mt-0.5">
-                          ${col.total_value.toLocaleString()}
+                          ${Number(col.total_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                       {stage.is_final_won && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
@@ -219,7 +219,7 @@ export default function CrmPipelinePage() {
                               >
                                 {lead.name}
                               </Link>
-                              <ScoreBadge score={lead.qualification_score} />
+                              <ScoreBadge score={Number(lead.qualification_score || 0)} />
                             </div>
 
                             <p className="text-[11px] text-slate-400 truncate">{lead.company || 'Individual Lead'}</p>
@@ -228,7 +228,7 @@ export default function CrmPipelinePage() {
                             <div className="flex items-center justify-between text-[10px] pt-2 border-t border-slate-800/60">
                               <StatusBadge status={lead.qualification_status} />
                               <span className="font-mono text-emerald-400 font-bold">
-                                {lead.deal_value ? `$${lead.deal_value.toLocaleString()}` : '$0'}
+                                ${Number(lead.deal_value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </span>
                             </div>
 

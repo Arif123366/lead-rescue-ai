@@ -1,3 +1,13 @@
+# Hostinger & Apache Production SPA Configuration for Lead Rescue AI
+DirectoryIndex index.html
+
+<IfModule mod_mime.c>
+  AddType application/javascript .js
+  AddType text/css .css
+  AddType image/svg+xml .svg
+  AddType font/woff2 .woff2
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -6,15 +16,21 @@
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+  # Never rewrite static assets (_next, css, js, images, fonts)
+  RewriteCond %{REQUEST_URI} ^/_next/ [OR]
+  RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|json|woff|woff2|ttf|eot)$ [NC]
+  RewriteRule ^ - [L]
+
   # Serve existing files and directories directly
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
-  # Rewrite clean URL (e.g. /login) to HTML file (e.g. /login.html) if it exists
-  RewriteCond %{REQUEST_FILENAME}.html -f
-  RewriteRule ^(.*)$ $1.html [L]
+  # Clean URL handling for trailingSlash export (e.g. /login -> /login/index.html)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+  RewriteRule ^([^/]+)/?$ /$1/index.html [L]
 
-  # Fallback all other client routing requests to index.html
+  # Fallback to index.html for SPA dynamic routes
   RewriteRule ^ index.html [L]
 </IfModule>

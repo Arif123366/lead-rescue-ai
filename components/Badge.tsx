@@ -10,6 +10,7 @@ interface BadgeProps {
 export function StatusBadge({ status, className = '' }: BadgeProps) {
   switch (status) {
     case 'Hot':
+    case 'HOT':
       return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 rescue-glow ${className}`}>
           <Flame className="w-3.5 h-3.5 animate-pulse text-rose-400" />
@@ -17,6 +18,7 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
         </span>
       );
     case 'Warm':
+    case 'WARM':
       return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 ${className}`}>
           <Sparkles className="w-3.5 h-3.5 text-amber-400" />
@@ -24,6 +26,7 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
         </span>
       );
     case 'Cold':
+    case 'COLD':
       return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700/40 text-slate-300 border border-slate-600/30 ${className}`}>
           <Snowflake className="w-3.5 h-3.5 text-sky-400" />
@@ -31,6 +34,9 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
         </span>
       );
     case 'Pending':
+    case 'PENDING':
+    case 'PENDING_QUALIFICATION':
+    case 'NEW':
       return (
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30 ${className}`}>
           <Clock className="w-3.5 h-3.5 animate-spin text-sky-400" />
