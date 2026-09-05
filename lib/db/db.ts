@@ -112,7 +112,7 @@ async function ensureSchema() {
 function normalizeSql(sql: string): string {
   let cleaned = sql;
   if (isPostgres) {
-    cleaned = cleaned.replace(/datetime\(['"]now['"](?:,\s*['"][^'"]+['"])?\)/gi, 'NOW()');
+    cleaned = cleaned.replace(/datetime\s*\([^)]+\)/gi, 'NOW()');
     let i = 1;
     cleaned = cleaned.replace(/\?/g, () => `$${i++}`);
   } else {
