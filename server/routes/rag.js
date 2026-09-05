@@ -57,7 +57,7 @@ router.post('/knowledge', async (req, res) => {
     });
   } catch (err) {
     console.error('[rag/knowledge POST]', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: err.message || 'Internal server error', details: String(err) });
   }
 });
 
