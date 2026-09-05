@@ -56,7 +56,7 @@ export default function LeadsPage() {
       if (search) url += `search=${encodeURIComponent(search)}&`;
       if (statusFilter) url += `status=${encodeURIComponent(statusFilter)}&`;
 
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       if (res.ok) {
         const data = await res.json();
         setLeads(data.leads || []);

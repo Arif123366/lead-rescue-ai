@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Sidebar } from '@/components/Sidebar';
+import { apiFetch } from '@/lib/api-client';
 import {
   BarChart3,
   TrendingUp,
@@ -39,8 +40,8 @@ export default function ReportsPage() {
       }
 
       const [resSources, resSales] = await Promise.all([
-        fetch(sourcesUrl),
-        fetch(salesUrl)
+        apiFetch(sourcesUrl),
+        apiFetch(salesUrl)
       ]);
 
       if (resSources.ok) {

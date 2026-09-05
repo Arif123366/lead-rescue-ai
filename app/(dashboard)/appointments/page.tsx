@@ -33,7 +33,7 @@ export default function AppointmentsPage() {
       let url = '/api/v1/appointments?';
       if (statusFilter) url += `status=${encodeURIComponent(statusFilter)}&`;
 
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       if (res.ok) {
         const json = await res.json();
         setAppointments(json.appointments || []);
