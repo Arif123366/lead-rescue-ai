@@ -68,7 +68,31 @@ async function getSqliteClient(): Promise<LibSqlClient> {
 let schemaInitialized = false;
 
 async function ensureSchema() {
-  if (isPostgres || schemaInitialized) return;
+  if (schemaInitialized) return;
+  if (isPostgres) {
+    try {
+      const pg = await getPgClient();
+      const pgMigrations = [
+        "ALTER TABLE lead_qualification_results ALTER COLUMN processed_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE lead_qualification_results ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE lead_qualification_results ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE follow_up_messages ALTER COLUMN sent_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE follow_up_messages ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE follow_up_messages ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE organization_rag_knowledge ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE organization_rag_knowledge ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE notifications ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
+      ];
+      for (const mig of pgMigrations) {
+        try { await pg.unsafe(mig); } catch { /* ignore if already set or table modified */ }
+      }
+      schemaInitialized = true;
+    } catch (err) {
+      console.error('[db] Failed to run Postgres schema migrations:', err);
+    }
+    return;
+  }
+
   try {
     const schemaPath = path.join(process.cwd(), 'lib', 'db', 'schema.sql');
     if (fs.existsSync(schemaPath)) {
