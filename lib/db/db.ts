@@ -308,6 +308,22 @@ async function ensureSchema() {
       for (const mig of pgMigrations) {
         try { await pg.unsafe(mig); } catch { /* ignore if already set or table modified */ }
       }
+
+      // Dynamic fix for any remaining columns in Postgres that have 'datetime' in their default expression
+      try {
+        const badDefaults = await pg.unsafe(`
+          SELECT table_name, column_name 
+          FROM information_schema.columns 
+          WHERE table_schema = 'public' 
+            AND column_default LIKE '%datetime%'
+        `);
+        for (const row of badDefaults) {
+          try {
+            await pg.unsafe(`ALTER TABLE "${row.table_name}" ALTER COLUMN "${row.column_name}" SET DEFAULT CURRENT_TIMESTAMP`);
+          } catch { /* ignore */ }
+        }
+      } catch { /* ignore if information_schema query fails */ }
+
       schemaInitialized = true;
     } catch (err) {
       console.error('[db] Failed to run Postgres schema migrations:', err);
