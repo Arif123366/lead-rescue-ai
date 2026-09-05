@@ -83,7 +83,7 @@ export async function syncExternalCrmConnector(connectorId: string): Promise<{ e
 
       await run(
         `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, datetime('now'), datetime('now'))`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, NOW(), NOW())`,
         [
           leadId,
           connector.organization_id,
@@ -117,7 +117,7 @@ export async function syncExternalCrmConnector(connectorId: string): Promise<{ e
 
   // Update connector last synced timestamp
   await run(
-    `UPDATE external_crm_connectors SET last_synced_at = datetime('now'), status = 'Active', updated_at = datetime('now') WHERE id = ?`,
+    `UPDATE external_crm_connectors SET last_synced_at = NOW(), status = 'Active', updated_at = NOW() WHERE id = ?`,
     [connectorId]
   );
 

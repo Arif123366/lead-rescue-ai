@@ -95,7 +95,7 @@ export async function sendFollowUp(input: ExecuteFollowUpInput) {
 
   // Update lead's last_contacted_at
   await run(
-    `UPDATE leads SET last_contacted_at = datetime('now'), updated_at = datetime('now') WHERE id = ?`,
+    `UPDATE leads SET last_contacted_at = NOW(), updated_at = NOW() WHERE id = ?`,
     [input.leadId]
   );
 
@@ -131,7 +131,7 @@ export async function processInboundResponse(leadId: string, responseContent: st
     text.includes('do not contact')
   ) {
     await run(
-      `UPDATE leads SET opt_out_communications = 1, qualification_status = 'Cold', updated_at = datetime('now') WHERE id = ?`,
+      `UPDATE leads SET opt_out_communications = 1, qualification_status = 'Cold', updated_at = NOW() WHERE id = ?`,
       [leadId]
     );
     return { action: 'opted_out' };

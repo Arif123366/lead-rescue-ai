@@ -18,7 +18,7 @@ export async function createStripeCheckoutSession(params: StripeCheckoutParams):
   // Record pending transaction
   await run(
     `INSERT INTO payment_transactions (id, organization_id, plan_id, provider, amount, currency, status, checkout_session_id, created_at, updated_at)
-     VALUES (?, ?, ?, 'stripe', ?, 'USD', 'pending', ?, datetime('now'), datetime('now'))`,
+     VALUES (?, ?, ?, 'stripe', ?, 'USD', 'pending', ?, NOW(), NOW())`,
     [transactionId, params.organizationId, params.planId, params.amount, sessionId]
   );
 
@@ -76,12 +76,12 @@ export async function processStripeWebhookPayload(event: any): Promise<{ success
 
     if (orgId && planId) {
       await run(
-        `UPDATE organizations SET subscription_plan_id = ?, payment_provider = 'stripe', payment_status = 'active', payment_reference_id = ?, updated_at = datetime('now') WHERE id = ?`,
+        `UPDATE organizations SET subscription_plan_id = ?, payment_provider = 'stripe', payment_status = 'active', payment_reference_id = ?, updated_at = NOW() WHERE id = ?`,
         [planId, sessionId, orgId]
       );
 
       await run(
-        `UPDATE payment_transactions SET status = 'completed', updated_at = datetime('now') WHERE checkout_session_id = ?`,
+        `UPDATE payment_transactions SET status = 'completed', updated_at = NOW() WHERE checkout_session_id = ?`,
         [sessionId]
       );
 

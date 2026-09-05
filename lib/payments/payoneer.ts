@@ -18,7 +18,7 @@ export async function createPayoneerCheckoutSession(params: PayoneerCheckoutPara
   // Record pending transaction in DB
   await run(
     `INSERT INTO payment_transactions (id, organization_id, plan_id, provider, amount, currency, status, checkout_session_id, created_at, updated_at)
-     VALUES (?, ?, ?, 'payoneer', ?, 'USD', 'pending', ?, datetime('now'), datetime('now'))`,
+     VALUES (?, ?, ?, 'payoneer', ?, 'USD', 'pending', ?, NOW(), NOW())`,
     [transactionId, params.organizationId, params.planId, params.amount, sessionId]
   );
 
@@ -68,7 +68,7 @@ export async function processPayoneerWebhookPayload(payload: any): Promise<{ suc
 
   if (sessionId && (status === 'PAID' || status === 'COMPLETED' || status === 'CHARGE_APPROVED')) {
     const tx = await run(
-      `UPDATE payment_transactions SET status = 'completed', updated_at = datetime('now') WHERE checkout_session_id = ?`,
+      `UPDATE payment_transactions SET status = 'completed', updated_at = NOW() WHERE checkout_session_id = ?`,
       [sessionId]
     );
 
