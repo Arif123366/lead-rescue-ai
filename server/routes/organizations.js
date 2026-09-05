@@ -169,7 +169,19 @@ router.post('/team', async (req, res) => {
       console.error('[team invite] Email send failed:', emailErr);
     }
 
-    const appUrl = (req.headers.origin && req.headers.origin !== 'null') ? req.headers.origin : (process.env.APP_URL || 'https://leadrescueai.xilxil.com');
+    function getAppUrl(request) {
+      const origin = request?.headers?.origin || request?.headers?.referer;
+      if (origin && typeof origin === 'string' && !origin.includes('localhost') && origin !== 'null') {
+        try { return new URL(origin).origin; } catch { return origin.replace(/\/$/, ''); }
+      }
+      const envUrl = process.env.APP_URL || process.env.FRONTEND_URL;
+      if (envUrl && !envUrl.includes('localhost')) {
+        return envUrl.replace(/\/$/, '');
+      }
+      return 'https://leadrescueai.xilxil.com';
+    }
+
+    const appUrl = getAppUrl(req);
     const inviteUrl = `${appUrl}/accept-invite?token=${rawToken}`;
 
     return res.status(201).json({
