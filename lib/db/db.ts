@@ -268,9 +268,18 @@ async function ensureSchema() {
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )`
       ];
-      for (const sql of pgTables) {
-        try { await pg.unsafe(sql); } catch (e) { /* ignore existing table or constraint */ }
-      }
+      // Create datetime() helper function in Postgres so any raw datetime('now') queries succeed automatically
+      try {
+        await pg.unsafe(`
+          CREATE OR REPLACE FUNCTION datetime(val text DEFAULT 'now') 
+          RETURNS timestamp AS $$
+          BEGIN
+            RETURN CURRENT_TIMESTAMP;
+          END;
+          $$ LANGUAGE plpgsql;
+        `);
+      } catch { /* ignore */ }
+
       const pgMigrations = [
         "ALTER TABLE subscription_plans ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE subscription_plans ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
