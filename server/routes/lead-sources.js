@@ -1,6 +1,7 @@
 /**
  * server/routes/lead-sources.js
  * Express router for /api/v1/lead-sources
+ * Production-Ready Webhook URL & Secret Generator
  */
 
 const express = require('express');
@@ -9,6 +10,14 @@ const crypto = require('crypto');
 
 const { query, get, run } = require('../../lib/db/db');
 const { getCurrentUser } = require('../../lib/auth/auth');
+
+function getFullWebhookUrl(req, sourceId) {
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const protocol = forwardedProto ? forwardedProto.split(',')[0] : req.protocol || 'https';
+  const host = req.get('host');
+  const baseUrl = process.env.BACKEND_URL || process.env.API_URL || `${protocol}://${host}`;
+  return `${baseUrl.replace(/\/$/, '')}/api/v1/webhooks/lead-source/${sourceId}`;
+}
 
 // GET /api/v1/lead-sources
 router.get('/', async (req, res) => {
@@ -23,11 +32,16 @@ router.get('/', async (req, res) => {
 
     return res.json({
       sources: sources.map(s => {
-        const parsedConfig = s.configuration ? JSON.parse(s.configuration) : {};
+        let parsedConfig = {};
+        try { parsedConfig = typeof s.configuration === 'string' ? JSON.parse(s.configuration) : (s.configuration || {}); } catch {}
+        const fullUrl = getFullWebhookUrl(req, s.id);
+        const secret = parsedConfig.secret || parsedConfig.webhook_secret || '';
+
         return {
           ...s,
           configuration: {
-            webhook_url: `/api/v1/webhooks/lead-source/${s.id}`,
+            webhook_url: fullUrl,
+            webhook_secret: secret,
             ...parsedConfig
           }
         };
@@ -56,16 +70,19 @@ router.post('/', async (req, res) => {
     }
 
     const sourceId = crypto.randomUUID();
-    const webhookUrl = `/api/v1/webhooks/lead-source/${sourceId}`;
+    const fullWebhookUrl = getFullWebhookUrl(req, sourceId);
+    const generatedSecret = crypto.randomBytes(20).toString('hex');
 
     const finalConfig = {
-      webhook_url: webhookUrl,
+      webhook_url: fullWebhookUrl,
+      secret: generatedSecret,
+      webhook_secret: generatedSecret,
       ...(configuration || {})
     };
 
     await run(
-      `INSERT INTO lead_sources (id, organization_id, name, type, configuration, is_active)
-       VALUES (?, ?, ?, ?, ?, 1)`,
+      `INSERT INTO lead_sources (id, organization_id, name, type, configuration, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())`,
       [
         sourceId,
         session.organization_id,
@@ -78,7 +95,16 @@ router.post('/', async (req, res) => {
     return res.status(201).json({
       message: 'Lead source created successfully.',
       source_id: sourceId,
-      webhook_url: webhookUrl
+      webhook_url: fullWebhookUrl,
+      webhook_secret: generatedSecret,
+      source: {
+        id: sourceId,
+        organization_id: session.organization_id,
+        name,
+        type,
+        is_active: 1,
+        configuration: finalConfig
+      }
     });
   } catch (err) {
     console.error('[lead-sources POST]', err);
@@ -98,28 +124,45 @@ router.put('/:id', async (req, res) => {
 
     const { name, type, configuration, is_active } = req.body;
 
-    const src = await get('SELECT id FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
+    const src = await get('SELECT id, configuration FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
     if (!src) return res.status(404).json({ error: 'Lead source not found.' });
+
+    let existingConfig = {};
+    try { existingConfig = typeof src.configuration === 'string' ? JSON.parse(src.configuration) : (src.configuration || {}); } catch {}
+
+    const updatedConfig = configuration ? { ...existingConfig, ...configuration } : existingConfig;
+    if (!updatedConfig.webhook_url) {
+      updatedConfig.webhook_url = getFullWebhookUrl(req, req.params.id);
+    }
+    if (!updatedConfig.secret && !updatedConfig.webhook_secret) {
+      const secret = crypto.randomBytes(20).toString('hex');
+      updatedConfig.secret = secret;
+      updatedConfig.webhook_secret = secret;
+    }
 
     await run(
       `UPDATE lead_sources 
        SET name = COALESCE(?, name),
            type = COALESCE(?, type),
-           configuration = COALESCE(?, configuration),
+           configuration = ?,
            is_active = COALESCE(?, is_active),
            updated_at = NOW()
        WHERE id = ? AND organization_id = ?`,
       [
         name ?? null,
         type ?? null,
-        configuration ? JSON.stringify(configuration) : null,
+        JSON.stringify(updatedConfig),
         is_active !== undefined ? (is_active ? 1 : 0) : null,
         req.params.id,
         session.organization_id
       ]
     );
 
-    return res.json({ message: 'Lead source updated successfully.' });
+    return res.json({
+      message: 'Lead source updated successfully.',
+      webhook_url: updatedConfig.webhook_url,
+      webhook_secret: updatedConfig.secret || updatedConfig.webhook_secret
+    });
   } catch (err) {
     console.error('[lead-sources PUT :id]', err);
     return res.status(500).json({ error: 'Internal server error' });
@@ -149,3 +192,4 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+
