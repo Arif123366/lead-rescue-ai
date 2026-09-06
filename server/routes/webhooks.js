@@ -8,7 +8,7 @@ const router = express.Router();
 const crypto = require('crypto');
 
 const { get, run } = require('../../lib/db/db');
-const { qualifyLead } = require('../../lib/ai/qualification');
+const { leadQueue } = require('../lib/queue/asyncQueue');
 const { generateWhatsAppResponse } = require('../../lib/ai/whatsappBot');
 const { sendWhatsAppMessage } = require('../../lib/integrations/wasender');
 const { processStripeWebhookPayload } = require('../../lib/payments/stripe');
@@ -38,6 +38,79 @@ router.get('/lead-source/:id', async (req, res) => {
     });
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Webhook status check failed' });
+  }
+});
+
+// ─── Direct Lead Capture Webhook ────────────────────────────────────────────
+
+router.post('/leads', async (req, res) => {
+  try {
+    const payload = req.body.data || req.body.lead || req.body.fields || req.body;
+
+    const signature = req.headers['x-lead-rescue-signature'] || req.headers['x-hub-signature-256'];
+    const webhookSecret = process.env.WEBHOOK_SECRET || 'lead_rescue_webhook_secret_key';
+
+    if (signature) {
+      const computed = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(req.body)).digest('hex');
+      const expected = signature.replace(/^sha256=/i, '');
+      if (computed !== expected && signature !== computed) {
+        return res.status(401).json({ error: 'Invalid HMAC SHA-256 signature' });
+      }
+    }
+
+    const name = sanitize(payload.name || payload.full_name || `${payload.first_name || ''} ${payload.last_name || ''}`.trim() || 'Inbound Webhook Lead');
+    const email = sanitize(payload.email || payload.email_address || undefined);
+    const phone = sanitize(payload.phone || payload.phone_number || undefined);
+    const company = sanitize(payload.company || payload.organization || undefined);
+    const productInterest = sanitize(payload.product_interest || payload.interest || payload.message || 'Inbound Webhook Inquiry');
+    const dealValue = parseFloat(payload.deal_value || payload.estimated_budget || '0') || undefined;
+
+    let source = await get("SELECT * FROM lead_sources WHERE is_active = 1 LIMIT 1");
+    if (!source) {
+      return res.status(400).json({ error: 'No active lead source found.' });
+    }
+
+    const initialStage = await get('SELECT id FROM crm_stages WHERE organization_id = ? AND is_initial = 1 LIMIT 1', [source.organization_id])
+      || await get('SELECT id FROM crm_stages WHERE organization_id = ? ORDER BY order_index ASC LIMIT 1', [source.organization_id]);
+
+    const leadId = cryptoNativeOrRandomUUID();
+
+    await run(
+      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, NOW(), NOW())`,
+      [
+        leadId,
+        source.organization_id,
+        name,
+        email || null,
+        phone || null,
+        company || null,
+        productInterest,
+        source.id,
+        initialStage?.id || null,
+        dealValue || null
+      ]
+    );
+
+    const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
+      leadId,
+      name,
+      email,
+      phone,
+      company,
+      product_interest: productInterest,
+      source_name: source.name
+    });
+
+    return res.status(202).json({
+      success: true,
+      message: 'Lead captured successfully via /api/v1/webhooks/leads and queued for AI qualification.',
+      lead_id: leadId,
+      job_id: jobId
+    });
+  } catch (err) {
+    console.error('[Webhooks POST /leads Error]:', err);
+    return res.status(500).json({ error: err.message || 'Error processing lead webhook' });
   }
 });
 
@@ -118,9 +191,7 @@ router.post('/lead-source/:id', async (req, res) => {
       ]
     );
 
-    await run("UPDATE organizations SET current_lead_count = current_lead_count + 1 WHERE id = ?", [source.organization_id]);
-
-    qualifyLead({
+    const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
       leadId,
       name,
       email,
@@ -128,12 +199,13 @@ router.post('/lead-source/:id', async (req, res) => {
       company,
       product_interest: productInterest,
       source_name: source.name
-    }).catch(err => console.error('[Webhook AI Qualification Error]:', err));
+    });
 
-    return res.status(201).json({
+    return res.status(202).json({
       success: true,
-      message: 'Lead captured successfully via webhook.',
-      lead_id: leadId
+      message: 'Lead captured successfully via webhook and queued for AI qualification.',
+      lead_id: leadId,
+      job_id: jobId
     });
   } catch (error) {
     console.error('[Lead Source Webhook Exception]:', error);

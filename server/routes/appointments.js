@@ -77,7 +77,7 @@ router.post('/', async (req, res) => {
 
     const apptStage = await get('SELECT id FROM crm_stages WHERE organization_id = ? AND (name LIKE \'%Appointment%\' OR name LIKE \'%Meeting%\') LIMIT 1', [session.organization_id]);
     if (apptStage) {
-      await run("UPDATE leads SET current_crm_stage_id = ?, last_contacted_at = NOW(), updated_at = NOW() WHERE id = ?", [apptStage.id, lead_id]);
+      await run("UPDATE leads SET current_crm_stage_id = ?, last_contacted_at = NOW(), updated_at = NOW() WHERE id = ? AND organization_id = ?", [apptStage.id, lead_id, session.organization_id]);
     }
 
     return res.status(201).json({

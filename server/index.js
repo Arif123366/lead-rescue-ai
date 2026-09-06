@@ -145,6 +145,29 @@ app.use((_req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
+// ─── 48-Hour Lead Rescue Background Daemon ──────────────────────────────────────
+const { query } = require('../lib/db/db');
+const { runLeadRescueScan } = require('../lib/ai/rescue');
+
+async function executeLeadRescueDaemon() {
+  try {
+    const orgs = await query('SELECT id FROM organizations');
+    for (const org of orgs) {
+      try {
+        await runLeadRescueScan(org.id, 48);
+      } catch (e) {
+        console.warn(`[LeadRescueDaemon] Scan error for org ${org.id}:`, e.message);
+      }
+    }
+  } catch (err) {
+    console.error('[LeadRescueDaemon] Execution failed:', err.message);
+  }
+}
+
+// Run once 10 seconds after boot, then every hour
+setTimeout(executeLeadRescueDaemon, 10000);
+setInterval(executeLeadRescueDaemon, 60 * 60 * 1000);
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🚀 Lead Rescue AI Backend`);
@@ -152,3 +175,4 @@ app.listen(PORT, () => {
   console.log(`   Health: http://localhost:${PORT}/health`);
   console.log(`   Allowed origins: ${ALLOWED_ORIGINS.join(', ')}\n`);
 });
+

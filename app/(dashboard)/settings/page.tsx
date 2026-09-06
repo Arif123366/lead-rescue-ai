@@ -166,7 +166,9 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(data.error);
 
       if (data.invite_url) {
-        setCreatedInviteUrl(data.invite_url);
+        const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://leadrescueai.xilxil.com';
+        const cleanUrl = data.invite_url.replace(/^https?:\/\/[^\/]+/, currentOrigin);
+        setCreatedInviteUrl(cleanUrl);
       } else {
         setShowInviteModal(false);
       }

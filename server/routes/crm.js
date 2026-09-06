@@ -204,8 +204,8 @@ router.post('/move', async (req, res) => {
            deal_value = COALESCE(?, deal_value), 
            reason_for_loss = COALESCE(?, reason_for_loss),
            updated_at = NOW()
-       WHERE id = ?`,
-      [target_stage_id, deal_value ?? null, reason_for_loss ?? null, lead_id]
+       WHERE id = ? AND organization_id = ?`,
+      [target_stage_id, deal_value ?? null, reason_for_loss ?? null, lead_id, session.organization_id]
     );
 
     return res.json({

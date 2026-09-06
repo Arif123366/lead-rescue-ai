@@ -82,6 +82,15 @@ router.put('/', async (req, res) => {
     const { id } = req.body;
     if (!id) return res.status(400).json({ error: 'id is required to trigger sync.' });
 
+    // SECURITY: Verify the connector belongs to the requesting organization before syncing.
+    // Without this check, any authenticated user could trigger a sync on another tenant's connector (IDOR).
+    const { get: dbGet } = require('../../lib/db/db');
+    const connector = await dbGet(
+      'SELECT id FROM external_crm_connectors WHERE id = ? AND organization_id = ?',
+      [id, session.organization_id]
+    );
+    if (!connector) return res.status(404).json({ error: 'CRM connector not found.' });
+
     const syncResult = await syncExternalCrmConnector(id);
 
     return res.json({

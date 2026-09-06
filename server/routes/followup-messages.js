@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 
+const { get } = require('../../lib/db/db');
 const { getCurrentUser } = require('../../lib/auth/auth');
 const { sendFollowUp, processInboundResponse } = require('../../lib/ai/followup');
 
@@ -20,6 +21,9 @@ router.post('/send', async (req, res) => {
     if (!lead_id) {
       return res.status(400).json({ error: 'lead_id is required.' });
     }
+
+    const lead = await get('SELECT id FROM leads WHERE id = ? AND organization_id = ?', [lead_id, session.organization_id]);
+    if (!lead) return res.status(404).json({ error: 'Lead not found.' });
 
     const result = await sendFollowUp({
       leadId: lead_id,

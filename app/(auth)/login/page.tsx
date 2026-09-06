@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Flame, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
+import { AuthFooter } from '@/components/auth/AuthFooter';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -129,6 +130,8 @@ export default function LoginPage() {
               Create Organization
             </Link>
           </div>
+
+          <AuthFooter />
         </div>
       </div>
     </div>

@@ -9,7 +9,9 @@ const router = express.Router();
 const { get, query, run } = require('../../lib/db/db');
 const { getCurrentUser } = require('../../lib/auth/auth');
 const { qualifyLead } = require('../../lib/ai/qualification');
+const { leadQueue } = require('../lib/queue/asyncQueue');
 const { cryptoNativeOrRandomUUID } = require('../../lib/utils/uuid');
+const { formatLeadsToCsv } = require('../lib/utils/csvSanitizer');
 
 // GET /api/v1/leads
 router.get('/', async (req, res) => {
@@ -144,7 +146,7 @@ router.post('/', async (req, res) => {
 
     const sourceObj = await get('SELECT name FROM lead_sources WHERE id = ?', [finalSourceId]);
     
-    qualifyLead({
+    const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
       leadId,
       name,
       email,
@@ -152,11 +154,12 @@ router.post('/', async (req, res) => {
       company,
       product_interest,
       source_name: sourceObj?.name || 'Manual Entry'
-    }).catch(err => console.error('Error during AI qualification:', err));
+    });
 
     return res.status(201).json({
-      message: 'Lead created successfully and AI qualification initiated.',
-      lead_id: leadId
+      message: 'Lead created successfully and queued for AI qualification.',
+      lead_id: leadId,
+      job_id: jobId
     });
   } catch (err) {
     console.error('[leads POST]', err);
@@ -258,6 +261,50 @@ router.post('/import', async (req, res) => {
     });
   } catch (err) {
     console.error('[leads import]', err);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /api/v1/leads/export
+router.get('/export', async (req, res) => {
+  try {
+    const session = await getCurrentUser(req);
+    if (!session) return res.status(401).json({ error: 'Unauthorized' });
+
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+
+    let sql = `
+      SELECT l.*, 
+             ls.name as source_name, 
+             cs.name as stage_name
+      FROM leads l
+      LEFT JOIN lead_sources ls ON l.source_id = ls.id
+      LEFT JOIN crm_stages cs ON l.current_crm_stage_id = cs.id
+      WHERE l.organization_id = ?
+    `;
+    const params = [session.organization_id];
+
+    if (search) {
+      sql += ` AND (l.name LIKE ? OR l.company LIKE ? OR l.email LIKE ? OR l.phone LIKE ?)`;
+      const searchPattern = `%${search}%`;
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+    if (status) {
+      sql += ` AND l.qualification_status = ?`;
+      params.push(status);
+    }
+
+    sql += ` ORDER BY l.created_at DESC`;
+
+    const leads = await query(sql, params);
+    const csvContent = formatLeadsToCsv(leads);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="lead_rescue_export_${Date.now()}.csv"`);
+    return res.status(200).send(csvContent);
+  } catch (err) {
+    console.error('[leads export]', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });

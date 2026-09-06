@@ -126,24 +126,30 @@ function AcceptInviteForm() {
   );
 }
 
+import AuthFooter from '@/components/auth/AuthFooter';
+
 export default function AcceptInvitePage() {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-between py-12 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-500/8 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl rescue-gradient rescue-glow mb-5 text-white">
-          <Flame className="w-9 h-9" />
+      <div>
+        <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl rescue-gradient rescue-glow mb-5 text-white">
+            <Flame className="w-9 h-9" />
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Accept Team Invitation</h1>
+          <p className="mt-2 text-sm text-slate-400">Set up your password to join your organization</p>
         </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Accept Team Invitation</h1>
-        <p className="mt-2 text-sm text-slate-400">Set up your password to join your organization</p>
+
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4">
+          <Suspense fallback={<div className="text-center py-8 text-xs text-slate-400">Loading invitation...</div>}>
+            <AcceptInviteForm />
+          </Suspense>
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4">
-        <Suspense fallback={<div className="text-center py-8 text-xs text-slate-400">Loading invitation...</div>}>
-          <AcceptInviteForm />
-        </Suspense>
-      </div>
+      <AuthFooter />
     </div>
   );
 }

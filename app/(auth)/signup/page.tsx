@@ -1,5 +1,6 @@
 'use client';
 import { apiFetch } from '@/lib/api-client';
+import { AuthFooter } from '@/components/auth/AuthFooter';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -156,6 +157,8 @@ export default function SignupPage() {
               Sign In
             </Link>
           </div>
+
+          <AuthFooter />
         </div>
       </div>
     </div>

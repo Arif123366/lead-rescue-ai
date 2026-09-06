@@ -25,9 +25,10 @@ const {
   acceptInviteSchema,
 } = require('../../lib/validation/schemas');
 const { sendPasswordResetEmail } = require('../../lib/email/mailer');
+const { authRateLimiter } = require('../middleware/rateLimiter');
 
 // POST /api/v1/auth/login
-router.post('/login', async (req, res) => {
+router.post('/login', authRateLimiter, async (req, res) => {
   try {
     const { data, error } = validate(loginSchema, req.body);
     if (error || !data) return res.status(422).json({ error: error || 'Invalid request' });
@@ -77,7 +78,7 @@ router.post('/login', async (req, res) => {
 });
 
 // POST /api/v1/auth/signup
-router.post('/signup', async (req, res) => {
+router.post('/signup', authRateLimiter, async (req, res) => {
   try {
     const { data, error } = validate(signupSchema, req.body);
     if (error || !data) return res.status(422).json({ error: error || 'Invalid request' });
@@ -183,8 +184,9 @@ router.post('/logout', (req, res) => {
   return res.json({ message: 'Logged out successfully' });
 });
 
-// POST /api/v1/auth/reset-password
-router.post('/reset-password', async (req, res) => {
+// POST /api/v1/auth/forgot-password & /api/v1/auth/reset-password
+const handleForgotPasswordRequest = async (req, res) => {
+  const startTime = Date.now();
   try {
     const { data, error } = validate(forgotPasswordSchema, req.body);
     if (error || !data) return res.status(422).json({ error: error || 'Invalid request' });
@@ -206,19 +208,28 @@ router.post('/reset-password', async (req, res) => {
       try {
         await sendPasswordResetEmail({ to: user.email, name: user.name, token: rawToken });
       } catch (emailErr) {
-        console.error('[reset-password] Email send failed:', emailErr);
+        console.error('[forgot-password] Email send failed:', emailErr);
       }
+    }
+
+    // Enforce uniform timing (min 300ms) to eliminate side-channel timing leaks
+    const elapsed = Date.now() - startTime;
+    if (elapsed < 300) {
+      await new Promise(r => setTimeout(r, 300 - elapsed));
     }
 
     return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
   } catch (err) {
-    console.error('[auth/reset-password POST]', err);
+    console.error('[auth/forgot-password POST]', err);
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
-});
+};
+
+router.post('/forgot-password', authRateLimiter, handleForgotPasswordRequest);
+router.post('/reset-password', authRateLimiter, handleForgotPasswordRequest);
 
 // PATCH /api/v1/auth/reset-password
-router.patch('/reset-password', async (req, res) => {
+router.patch('/reset-password', authRateLimiter, async (req, res) => {
   try {
     const { data, error } = validate(resetPasswordSchema, req.body);
     if (error || !data) return res.status(422).json({ error: error || 'Invalid request' });
@@ -253,7 +264,7 @@ router.patch('/reset-password', async (req, res) => {
 });
 
 // POST /api/v1/auth/accept-invite
-router.post('/accept-invite', async (req, res) => {
+router.post('/accept-invite', authRateLimiter, async (req, res) => {
   try {
     const { data, error } = validate(acceptInviteSchema, req.body);
     if (error || !data) return res.status(422).json({ error: error || 'Invalid request' });
