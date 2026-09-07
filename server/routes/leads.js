@@ -344,12 +344,21 @@ router.get('/:id', async (req, res) => {
       [req.params.id]
     );
 
+    const parsedAnalysis = lead.analysis_data ? (typeof lead.analysis_data === 'string' ? JSON.parse(lead.analysis_data) : lead.analysis_data) : null;
+
     return res.json({
       lead: {
         ...lead,
-        analysis_data: lead.analysis_data ? JSON.parse(lead.analysis_data) : null
+        analysis_data: parsedAnalysis
+      },
+      qualification_result: {
+        qualification_score: lead.qualification_score,
+        qualification_status: lead.qualification_status,
+        analysis_data: parsedAnalysis,
+        ai_model_used: lead.ai_model_used
       },
       follow_up_history: followUpHistory,
+      follow_up_messages: followUpHistory,
       appointments
     });
   } catch (err) {
@@ -389,7 +398,8 @@ router.put('/:id', async (req, res) => {
         body.assigned_to_user_id ?? null,
         body.deal_value ?? null,
         body.notes ?? null,
-        req.params.id
+        req.params.id,
+        session.organization_id
       ]
     );
 
@@ -409,7 +419,7 @@ router.delete('/:id', async (req, res) => {
     const existingLead = await get('SELECT id FROM leads WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
     if (!existingLead) return res.status(404).json({ error: 'Lead not found.' });
 
-    await run('DELETE FROM leads WHERE id = ?', [req.params.id]);
+    await run('DELETE FROM leads WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
 
     return res.json({ message: 'Lead deleted successfully.' });
   } catch (err) {

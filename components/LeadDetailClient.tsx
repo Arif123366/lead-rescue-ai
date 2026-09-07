@@ -133,9 +133,9 @@ export function LeadDetailClient() {
   }
 
   const lead = data?.lead;
-  const qualification = data?.qualification_result;
-  const analysis = qualification?.analysis_data || {};
-  const followups = data?.follow_up_messages || [];
+  const qualification = data?.qualification_result || (lead?.analysis_data ? { analysis_data: lead.analysis_data, ai_model_used: lead.ai_model_used } : null);
+  const analysis = qualification?.analysis_data || lead?.analysis_data || {};
+  const followups = data?.follow_up_messages || data?.follow_up_history || [];
   const appointments = data?.appointments || [];
 
   if (!lead) {

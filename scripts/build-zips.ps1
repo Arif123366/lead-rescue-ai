@@ -23,6 +23,10 @@ foreach ($file in $files) {
 $zip.Dispose()
 Write-Host "✅ out/frontend.zip successfully created!"
 
+$rootFrontendZip = Join-Path $root "hostinger_frontend.zip"
+Copy-Item $frontendZip $rootFrontendZip -Force
+Write-Host "✅ hostinger_frontend.zip in root successfully updated!"
+
 # 2. Build lead-rescue-ai-updated.zip (Full source code package)
 $fullZip = Join-Path $root "lead-rescue-ai-updated.zip"
 if (Test-Path $fullZip) {

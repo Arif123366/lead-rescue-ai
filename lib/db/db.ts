@@ -146,6 +146,7 @@ async function ensureSchema() {
           last_contacted_at TIMESTAMP,
           deal_value DOUBLE PRECISION,
           reason_for_loss TEXT,
+          notes TEXT,
           opt_out_communications INTEGER NOT NULL DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -313,6 +314,7 @@ async function ensureSchema() {
         "ALTER TABLE organization_rag_knowledge ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE external_crm_connectors ALTER COLUMN created_at SET DEFAULT CURRENT_TIMESTAMP",
         "ALTER TABLE external_crm_connectors ALTER COLUMN updated_at SET DEFAULT CURRENT_TIMESTAMP",
+        "ALTER TABLE leads ADD COLUMN IF NOT EXISTS notes TEXT",
       ];
       for (const mig of pgMigrations) {
         try { await pg.unsafe(mig); } catch { /* ignore if already set or table modified */ }
@@ -359,6 +361,7 @@ async function ensureSchema() {
         "ALTER TABLE organizations ADD COLUMN payment_provider TEXT DEFAULT 'stripe'",
         "ALTER TABLE organizations ADD COLUMN payment_status TEXT DEFAULT 'active'",
         "ALTER TABLE organizations ADD COLUMN payment_reference_id TEXT",
+        "ALTER TABLE leads ADD COLUMN notes TEXT",
         "ALTER TABLE follow_up_messages ADD COLUMN message TEXT",
         "ALTER TABLE follow_up_messages ADD COLUMN message_content TEXT",
         "ALTER TABLE follow_up_messages ADD COLUMN channel TEXT NOT NULL DEFAULT 'Email'",

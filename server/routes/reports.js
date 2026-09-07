@@ -8,6 +8,7 @@ const router = express.Router();
 
 const { get, query } = require('../../lib/db/db');
 const { getCurrentUser } = require('../../lib/auth/auth');
+const { runLeadRescueScan } = require('../../lib/ai/rescue');
 
 // GET /api/v1/reports/dashboard
 router.get('/dashboard', async (req, res) => {
@@ -27,15 +28,42 @@ router.get('/dashboard', async (req, res) => {
     const pipelineValueObj = await get('SELECT SUM(COALESCE(deal_value, 0)) as total FROM leads WHERE organization_id = ?', [orgId]);
     const totalPipelineValue = parseFloat(pipelineValueObj?.total || 0);
 
-    const cutoff48h = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
-    const needsAttentionObj = await get(
-      `SELECT COUNT(*) as count FROM leads 
-       WHERE organization_id = ? 
-         AND qualification_status IN ('Hot', 'Warm') 
-         AND (last_contacted_at IS NULL OR last_contacted_at <= ?)
-         AND opt_out_communications = 0`,
-      [orgId, cutoff48h]
+    // Conversion rate: Won Leads / Qualified Leads (Hot + Warm)
+    const wonLeadsObj = await get(
+      `SELECT COUNT(*) as count FROM leads l
+       JOIN crm_stages cs ON l.current_crm_stage_id = cs.id
+       WHERE l.organization_id = ? AND cs.is_final_won = 1`,
+      [orgId]
     );
+    const wonCount = parseInt(wonLeadsObj?.count || 0, 10);
+    const qualifiedCount = parseInt(hotLeadsObj?.count || 0, 10) + parseInt(warmLeadsObj?.count || 0, 10);
+    const conversionRate = qualifiedCount > 0 ? ((wonCount / qualifiedCount) * 100).toFixed(1) : '0.0';
+
+    // AI Follow-ups Sent count
+    const followupsObj = await get(
+      `SELECT COUNT(*) as count FROM follow_up_messages fm
+       JOIN leads l ON fm.lead_id = l.id
+       WHERE l.organization_id = ?`,
+      [orgId]
+    );
+    const followupsSent = parseInt(followupsObj?.count || 0, 10);
+
+    // Appointments Scheduled count
+    const appointmentsObj = await get(
+      `SELECT COUNT(*) as count FROM appointments a
+       JOIN leads l ON a.lead_id = l.id
+       WHERE l.organization_id = ?`,
+      [orgId]
+    );
+    const appointmentsScheduled = parseInt(appointmentsObj?.count || 0, 10);
+
+    // At-Risk Leads Needing Attention (Lead Rescue Command)
+    let atRiskLeads = [];
+    try {
+      atRiskLeads = await runLeadRescueScan(orgId, 48);
+    } catch (e) {
+      console.warn('[reports/dashboard] runLeadRescueScan error:', e.message);
+    }
 
     const stageVelocity = await query(
       `SELECT cs.id as stage_id, cs.name as stage_name, COUNT(l.id) as lead_count, SUM(COALESCE(l.deal_value, 0)) as total_value
@@ -63,10 +91,16 @@ router.get('/dashboard', async (req, res) => {
         hot_leads: parseInt(hotLeadsObj?.count || 0, 10),
         warm_leads: parseInt(warmLeadsObj?.count || 0, 10),
         cold_leads: parseInt(coldLeadsObj?.count || 0, 10),
+        pipeline_value: totalPipelineValue,
         total_pipeline_value: totalPipelineValue,
-        leads_needing_attention: parseInt(needsAttentionObj?.count || 0, 10)
+        conversion_rate: conversionRate,
+        ai_followups_sent: followupsSent,
+        appointments_scheduled: appointmentsScheduled,
+        leads_needing_attention: atRiskLeads.length
       },
+      needs_attention: atRiskLeads.slice(0, 5),
       stage_velocity: stageVelocity,
+      stage_breakdown: stageVelocity,
       recent_leads: recentLeads
     });
   } catch (err) {

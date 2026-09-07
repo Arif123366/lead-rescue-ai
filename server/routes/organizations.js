@@ -310,6 +310,15 @@ router.post('/subscription', async (req, res) => {
       });
     }
 
+    const actualLeads = await get('SELECT COUNT(*) as count FROM leads WHERE organization_id = ?', [session.organization_id]);
+    const leadCount = parseInt(actualLeads?.count || 0, 10);
+
+    if (leadCount > targetPlan.lead_limit) {
+      return res.status(400).json({
+        error: `Cannot downgrade to ${targetPlan.name} because your organization has ${leadCount} leads, but the plan limit is ${targetPlan.lead_limit}. Please archive or delete excess leads first.`
+      });
+    }
+
     await run('UPDATE organizations SET subscription_plan_id = ?, updated_at = NOW() WHERE id = ?', [plan_id, session.organization_id]);
 
     return res.json({

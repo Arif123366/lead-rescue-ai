@@ -180,8 +180,8 @@ router.delete('/stages', async (req, res) => {
   }
 });
 
-// POST /api/v1/crm/move
-router.post('/move', async (req, res) => {
+// POST & PUT /api/v1/crm/move
+const handleMoveLead = async (req, res) => {
   try {
     const session = await getCurrentUser(req);
     if (!session) return res.status(401).json({ error: 'Unauthorized' });
@@ -205,7 +205,7 @@ router.post('/move', async (req, res) => {
            reason_for_loss = COALESCE(?, reason_for_loss),
            updated_at = NOW()
        WHERE id = ? AND organization_id = ?`,
-      [target_stage_id, deal_value ?? null, reason_for_loss ?? null, lead_id, session.organization_id]
+      [target_stage_id, deal_value !== undefined && deal_value !== '' ? parseFloat(deal_value) : null, reason_for_loss ?? null, lead_id, session.organization_id]
     );
 
     return res.json({
@@ -217,6 +217,9 @@ router.post('/move', async (req, res) => {
     console.error('[crm/move]', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
-});
+};
+
+router.post('/move', handleMoveLead);
+router.put('/move', handleMoveLead);
 
 module.exports = router;

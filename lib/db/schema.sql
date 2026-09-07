@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS leads (
   last_contacted_at TEXT,
   deal_value REAL,
   reason_for_loss TEXT,
+  notes TEXT,
   opt_out_communications INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))

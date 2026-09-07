@@ -109,6 +109,8 @@ export async function sendFollowUp(input: ExecuteFollowUpInput) {
     id: messageId,
     leadId: input.leadId,
     message: finalMessage,
+    messageContent: finalMessage,
+    message_content: finalMessage,
     channel,
     status: deliveryStatus,
     sent_at: new Date().toISOString(),
@@ -173,9 +175,9 @@ export async function processInboundResponse(leadId: string, responseContent: st
 
   // Log inbound response
   await run(
-    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, channel, status, direction, created_at, updated_at)
-     VALUES (?, ?, NOW(), ?, 'Email', 'Received', 'Inbound', NOW(), NOW())`,
-    [crypto.randomUUID(), leadId, responseContent]
+    `INSERT INTO follow_up_messages (id, lead_id, sent_at, message, message_content, response_content, channel, status, direction, created_at, updated_at)
+     VALUES (?, ?, NOW(), ?, ?, ?, 'Email', 'Received', 'Inbound', NOW(), NOW())`,
+    [crypto.randomUUID(), leadId, responseContent, responseContent, responseContent]
   );
 
   return { action: 'processed', newScore, newStatus: updatedStatus };
