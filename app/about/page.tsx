@@ -2,20 +2,16 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Flame, ArrowLeft, Target, Cpu, ShieldCheck, Users } from 'lucide-react';
+import { ArrowLeft, Target, Cpu, ShieldCheck, Users } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl rescue-gradient flex items-center justify-center text-white">
-              <Flame className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-white text-base">Lead Rescue AI</span>
-          </Link>
-          <Link href="/" className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+          <BrandLogo size="sm" showTagline={true} />
+          <Link href="/" className="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
         </div>
@@ -28,8 +24,8 @@ export default function AboutPage() {
         </p>
 
         <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center mb-4">
+          <div className="bg-slate-900/50 border border-slate-800 hover:border-cyan-500/40 transition-all rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-4 neon-cyan-glow">
               <Target className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-white mb-2">Our Mission</h3>
@@ -38,8 +34,8 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
+          <div className="bg-slate-900/50 border border-slate-800 hover:border-purple-500/40 transition-all rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center mb-4 neon-purple-glow">
               <Cpu className="w-5 h-5" />
             </div>
             <h3 className="text-base font-bold text-white mb-2">Autonomous LLM &amp; RAG Technology</h3>
@@ -51,7 +47,7 @@ export default function AboutPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-8 px-6 text-center text-xs text-slate-500">
-        &copy; {new Date().getFullYear()} Lead Rescue AI Inc. All rights reserved.
+        &copy; {new Date().getFullYear()} Lead Rescue AI &bull; POWERED BY XILXIL. All rights reserved.
       </footer>
     </div>
   );

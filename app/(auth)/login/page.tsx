@@ -39,23 +39,31 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-cyan-500 selection:text-slate-950">
       {/* Background ambient glow */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-rose-500/8 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl rescue-gradient rescue-glow mb-5 text-white">
-          <Flame className="w-9 h-9" />
-        </div>
-        <h1 className="text-3xl font-extrabold text-white tracking-tight">Lead Rescue AI</h1>
-        <p className="mt-2 text-sm text-slate-400">Sign in to your organization dashboard</p>
+        <Link href="/" className="inline-block group">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl rescue-gradient rescue-glow mb-4 p-2 border border-cyan-400/40 group-hover:scale-105 transition-transform">
+            <img src="/icon.png" alt="Lead Rescue AI" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
+          </div>
+          <h1 className="text-3xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Lead</span>
+            <span className="bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">Rescue AI</span>
+          </h1>
+          <p className="text-[11px] font-extrabold tracking-widest uppercase text-slate-400 mt-1">
+            POWERED BY <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">XILXIL</span>
+          </p>
+        </Link>
+        <p className="mt-2 text-xs text-slate-400">Sign in to your organization dashboard</p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4">
         <div className="glass-panel p-8 rounded-3xl shadow-2xl border border-slate-800">
           {error && (
-            <div className="mb-5 p-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-sm flex items-center gap-3">
+            <div className="mb-5 p-4 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-sm flex items-center gap-3">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -75,7 +83,7 @@ export default function LoginPage() {
                   autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-cyan-400 transition-colors"
                   placeholder="name@company.com"
                 />
               </div>
@@ -84,7 +92,7 @@ export default function LoginPage() {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-semibold text-slate-300">Password</label>
-                <Link href="/forgot-password" className="text-xs text-rose-400 hover:underline font-medium">
+                <Link href="/forgot-password" className="text-xs text-cyan-400 hover:underline font-medium">
                   Forgot password?
                 </Link>
               </div>
@@ -97,7 +105,7 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-rose-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-cyan-400 transition-colors"
                   placeholder="••••••••"
                 />
               </div>
@@ -106,7 +114,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 px-4 rounded-xl rescue-gradient rescue-glow text-white font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-opacity disabled:opacity-50"
+              className="w-full py-3 px-4 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-sm flex items-center justify-center gap-2 hover:opacity-95 transition-opacity disabled:opacity-50"
             >
               {loading ? (
                 <>
@@ -126,7 +134,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-xs text-slate-400">
             Don&apos;t have an organization account?{' '}
-            <Link href="/signup" className="text-rose-400 font-semibold hover:underline">
+            <Link href="/signup" className="text-cyan-400 font-semibold hover:underline">
               Create Organization
             </Link>
           </div>

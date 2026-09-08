@@ -51,7 +51,7 @@ export function Sidebar() {
       case 'Sales Representative':
         return { label: 'Sales Representative', icon: UserCheck, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40' };
       default:
-        return { label: 'Organization Owner', icon: ShieldCheck, color: 'text-rose-400 border-rose-500/30 bg-rose-950/40' };
+        return { label: 'Organization Owner', icon: ShieldCheck, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/40' };
     }
   };
 
@@ -72,19 +72,19 @@ export function Sidebar() {
               className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                 isActive
                   ? item.highlight
-                    ? 'rescue-gradient text-white rescue-glow'
-                    : 'bg-slate-800 text-white border border-slate-700/80'
+                    ? 'rescue-gradient text-white font-bold rescue-glow'
+                    : 'bg-gradient-to-r from-cyan-950/50 via-purple-950/30 to-slate-900 text-cyan-300 border border-cyan-500/40 shadow-[0_0_15px_rgba(0,240,255,0.15)]'
                   : item.highlight
-                  ? 'text-rose-400 hover:bg-rose-500/10 border border-rose-500/20'
-                  : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
+                  ? 'text-purple-400 hover:bg-purple-500/10 border border-purple-500/30 hover:border-purple-500/50'
+                  : 'text-slate-400 hover:bg-slate-900/80 hover:text-cyan-300'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${isActive ? 'text-white' : item.highlight ? 'text-rose-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                <Icon className={`w-4 h-4 ${isActive ? (item.highlight ? 'text-white' : 'text-cyan-400') : item.highlight ? 'text-purple-400' : 'text-slate-400 group-hover:text-cyan-300'}`} />
                 <span>{item.label}</span>
               </div>
               {item.highlight && !isActive && (
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+                <span className="w-2 h-2 rounded-full bg-purple-500 animate-ping shadow-[0_0_8px_rgba(168,85,247,0.8)]" />
               )}
             </Link>
           );

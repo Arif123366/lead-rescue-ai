@@ -22,7 +22,10 @@ import {
 
 export function LeadDetailClient() {
   const params = useParams();
-  const leadId = params.id as string;
+  const rawId = params?.id as string;
+  const leadId = (rawId && rawId !== 'default')
+    ? rawId
+    : (typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean).pop() || '' : '');
 
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -214,10 +217,10 @@ export function LeadDetailClient() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* AI QUALIFICATION ANALYSIS CARD */}
             <div className="lg:col-span-2 space-y-6">
-              <div className="glass-panel p-6 rounded-3xl border border-rose-500/20 rescue-glow space-y-5">
-                <div className="flex items-center justify-between border-b border-rose-500/20 pb-3">
+              <div className="glass-panel p-6 rounded-3xl border border-cyan-500/40 rescue-glow space-y-5 shadow-[0_0_20px_rgba(0,240,255,0.12)]">
+                <div className="flex items-center justify-between border-b border-cyan-500/20 pb-3">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-rose-400" />
+                    <Sparkles className="w-5 h-5 text-cyan-400" />
                     <h2 className="text-base font-bold text-white">AI Lead Qualification Analysis</h2>
                   </div>
                   <span className="text-[10px] text-slate-400 font-mono">Model: {qualification?.ai_model_used || 'GPT-4o'}</span>
@@ -265,14 +268,14 @@ export function LeadDetailClient() {
                     followups.map((msg: any) => (
                       <div key={msg.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs space-y-2">
                         <div className="flex items-center justify-between text-[11px] text-slate-400">
-                          <span className="font-semibold text-indigo-400">{msg.channel} Follow-Up</span>
+                          <span className="font-semibold text-cyan-400">{msg.channel} Follow-Up</span>
                           <span>{new Date(msg.sent_at).toLocaleString()}</span>
                         </div>
                         <p className="text-slate-200">{msg.message_content}</p>
 
                         {msg.response_content && (
-                          <div className="mt-2 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-200 text-xs">
-                            <span className="font-semibold block text-[10px] uppercase text-rose-400 mb-1">Inbound Response Received:</span>
+                          <div className="mt-2 p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-200 text-xs">
+                            <span className="font-semibold block text-[10px] uppercase text-purple-400 mb-1">Inbound Response Received:</span>
                             &quot;{msg.response_content}&quot;
                           </div>
                         )}

@@ -90,7 +90,7 @@ export default function CrmPipelinePage() {
 
   const executeStageMove = async (leadId: string, targetStageId: string, value?: string, reason?: string) => {
     try {
-      const res = await apiFetch('/api/v1/crm/move', {
+      let res = await apiFetch('/api/v1/crm/move', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -100,6 +100,19 @@ export default function CrmPipelinePage() {
           reason_for_loss: reason
         })
       });
+
+      if (res.status === 404) {
+        res = await apiFetch('/api/v1/crm/move', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lead_id: leadId,
+            target_stage_id: targetStageId,
+            deal_value: value,
+            reason_for_loss: reason
+          })
+        });
+      }
 
       if (res.ok) {
         setMoveModal({ ...moveModal, show: false });

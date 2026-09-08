@@ -71,7 +71,7 @@ export default function LeadRescuePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-950 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
       <Navbar />
 
       <div className="flex flex-1">
@@ -81,7 +81,7 @@ export default function LeadRescuePage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                <ShieldAlert className="w-6 h-6 text-rose-500 animate-pulse" />
+                <ShieldAlert className="w-6 h-6 text-purple-400 animate-pulse neon-purple-glow" />
                 Lead Rescue Command Center
               </h1>
               <p className="text-xs text-slate-400 mt-1">
@@ -94,7 +94,7 @@ export default function LeadRescuePage() {
               <select
                 value={hoursThreshold}
                 onChange={(e) => setHoursThreshold(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-rose-500 font-medium"
+                className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400 font-medium"
               >
                 <option value="24">&gt; 24 Hours Idle</option>
                 <option value="48">&gt; 48 Hours Idle (Standard)</option>
@@ -104,7 +104,7 @@ export default function LeadRescuePage() {
 
               <button
                 onClick={fetchRescueScan}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-400 hover:text-white transition-colors"
                 title="Run Rescue Scan"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -135,12 +135,12 @@ export default function LeadRescuePage() {
               atRiskLeads.map((item) => (
                 <div
                   key={item.lead_id}
-                  className="glass-panel p-6 rounded-3xl border border-rose-500/30 rescue-glow space-y-4 hover:border-rose-500/50 transition-colors"
+                  className="glass-panel p-6 rounded-3xl border border-cyan-500/40 rescue-glow space-y-4 hover:border-cyan-400 transition-colors shadow-[0_0_20px_rgba(0,240,255,0.12)]"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex items-center gap-3 flex-wrap">
-                        <Link href={`/leads/${item.lead_id}`} className="font-extrabold text-base text-white hover:text-rose-400 hover:underline">
+                        <Link href={`/leads/${item.lead_id}`} className="font-extrabold text-base text-white hover:text-cyan-400 hover:underline">
                           {item.lead_name}
                         </Link>
                         <StatusBadge status={item.qualification_status} />
@@ -155,7 +155,7 @@ export default function LeadRescuePage() {
                     <div className="flex items-center gap-4 text-right">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-500 block">Idle Time</span>
-                        <span className="text-sm font-extrabold text-rose-400 flex items-center gap-1">
+                        <span className="text-sm font-extrabold text-purple-400 flex items-center gap-1">
                           <Clock className="w-4 h-4" /> {item.hours_idle} Hours
                         </span>
                       </div>
@@ -171,8 +171,8 @@ export default function LeadRescuePage() {
                   {/* AI Recommended Recovery Action Box */}
                   <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="space-y-1">
-                      <span className="text-[10px] uppercase font-extrabold text-rose-400 tracking-wider flex items-center gap-1">
-                        <Zap className="w-3 h-3" /> AI Recommended Recovery Protocol
+                      <span className="text-[10px] uppercase font-extrabold text-cyan-400 tracking-wider flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-cyan-400" /> AI Recommended Recovery Protocol
                       </span>
                       <p className="text-xs font-semibold text-white">{item.recommended_action}</p>
                     </div>
@@ -181,7 +181,7 @@ export default function LeadRescuePage() {
                       <button
                         onClick={() => handleRescueAction(item.lead_id, 'send_followup', item.recommended_template_id)}
                         disabled={rescuingId === item.lead_id}
-                        className="px-4 py-2 rounded-xl rescue-gradient text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-95 transition-opacity disabled:opacity-50"
+                        className="px-4 py-2 rounded-xl rescue-gradient text-slate-950 text-xs font-black flex items-center gap-1.5 hover:opacity-95 transition-opacity disabled:opacity-50"
                       >
                         <Send className="w-3.5 h-3.5" />
                         {rescuingId === item.lead_id ? 'Executing...' : 'Execute AI Rescue'}

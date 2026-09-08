@@ -26,11 +26,16 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule ^ - [L]
 
+  # Dynamic lead details rewrite (e.g. /leads/UUID -> /leads/default/index.html)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^leads/([^/]+)/?$ /leads/default/index.html [L]
+
   # Clean URL handling for trailingSlash export (e.g. /login -> /login/index.html)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
   RewriteRule ^([^/]+)/?$ /$1/index.html [L]
 
   # Fallback to index.html for SPA dynamic routes
-  RewriteRule ^ index.html [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteRule ^ /index.html [L]
 </IfModule>

@@ -75,10 +75,12 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center selection:bg-cyan-500 selection:text-slate-950">
         <div className="text-center">
-          <Flame className="w-10 h-10 text-rose-500 animate-bounce mx-auto mb-3" />
-          <p className="text-sm font-semibold text-slate-400">Loading Lead Rescue AI Dashboard...</p>
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl rescue-gradient rescue-glow p-2 border border-cyan-400/40 animate-pulse">
+            <img src="/icon.png" alt="Lead Rescue AI" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
+          </div>
+          <p className="text-xs font-black tracking-wider uppercase text-cyan-300">Loading Command Dashboard...</p>
         </div>
       </div>
     );
@@ -89,7 +91,7 @@ export default function DashboardPage() {
   const stageBreakdown = data?.stage_breakdown || [];
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col">
+    <div className="min-h-screen bg-slate-950 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
       <Navbar />
 
       <div className="flex flex-1">
@@ -110,19 +112,19 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2.5 flex-wrap">
               <Link
                 href="/leads?action=new"
-                className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-95 transition-opacity"
+                className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center gap-1.5 hover:opacity-95 transition-opacity"
               >
                 <Plus className="w-4 h-4" /> Add Lead
               </Link>
               <Link
                 href="/leads?action=import"
-                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-800 transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-800 transition-colors"
               >
                 <Upload className="w-4 h-4 text-slate-400" /> Import CSV
               </Link>
               <button
                 onClick={fetchDashboardData}
-                className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-400 hover:text-white transition-colors"
                 title="Refresh Metrics"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -140,19 +142,19 @@ export default function DashboardPage() {
 
           {/* Metrics Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="glass-card p-5 rounded-2xl border border-slate-800">
+            <div className="glass-card p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/30 transition-all">
               <div className="flex items-center justify-between text-slate-400 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider">Total Leads</span>
-                <Users className="w-4 h-4 text-sky-400" />
+                <Users className="w-4 h-4 text-cyan-400" />
               </div>
               <div className="text-2xl font-extrabold text-white">{metrics.total_leads || 0}</div>
               <div className="mt-2 text-[11px] text-slate-400 flex items-center gap-2">
-                <span className="text-rose-400 font-semibold">{metrics.hot_leads || 0} Hot</span> • 
-                <span className="text-amber-400 font-semibold">{metrics.warm_leads || 0} Warm</span>
+                <span className="text-purple-400 font-semibold">{metrics.hot_leads || 0} Hot</span> • 
+                <span className="text-cyan-400 font-semibold">{metrics.warm_leads || 0} Warm</span>
               </div>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-slate-800">
+            <div className="glass-card p-5 rounded-2xl border border-slate-800 hover:border-cyan-500/30 transition-all">
               <div className="flex items-center justify-between text-slate-400 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider">Pipeline Value</span>
                 <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -165,10 +167,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-slate-800">
+            <div className="glass-card p-5 rounded-2xl border border-slate-800 hover:border-purple-500/30 transition-all">
               <div className="flex items-center justify-between text-slate-400 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider">Conversion Rate</span>
-                <TrendingUp className="w-4 h-4 text-rose-400" />
+                <TrendingUp className="w-4 h-4 text-purple-400" />
               </div>
               <div className="text-2xl font-extrabold text-white">{metrics.conversion_rate || '0.0'}%</div>
               <div className="mt-2 text-[11px] text-slate-400">
@@ -176,7 +178,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="glass-card p-5 rounded-2xl border border-slate-800">
+            <div className="glass-card p-5 rounded-2xl border border-slate-800 hover:border-indigo-500/30 transition-all">
               <div className="flex items-center justify-between text-slate-400 mb-2">
                 <span className="text-xs font-semibold uppercase tracking-wider">AI Follow-ups Sent</span>
                 <MessageSquare className="w-4 h-4 text-indigo-400" />
@@ -190,24 +192,24 @@ export default function DashboardPage() {
           </div>
 
           {/* PROMINENT NEEDS ATTENTION (LEAD RESCUE ALERTS) */}
-          <div className="glass-panel p-6 rounded-3xl border border-rose-500/30 rescue-glow space-y-4">
-            <div className="flex items-center justify-between border-b border-rose-500/20 pb-4">
+          <div className="glass-panel p-6 rounded-3xl border border-cyan-500/40 rescue-glow space-y-4 shadow-[0_0_25px_rgba(0,240,255,0.12)]">
+            <div className="flex items-center justify-between border-b border-cyan-500/20 pb-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/40 flex items-center justify-center neon-purple-glow">
                   <ShieldAlert className="w-6 h-6 animate-pulse" />
                 </div>
                 <div>
                   <h2 className="text-lg font-black text-white flex items-center gap-2">
                     Needs Attention — Lead Rescue Command
                   </h2>
-                  <p className="text-xs text-rose-300/80">
+                  <p className="text-xs text-slate-400">
                     High-value Hot & Warm leads with no contact in &gt; 48 hours. Autonomously flagged for immediate recovery.
                   </p>
                 </div>
               </div>
               <Link
                 href="/rescue"
-                className="text-xs text-rose-400 hover:text-rose-300 font-semibold flex items-center gap-1 hover:underline"
+                className="text-xs text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1 hover:underline"
               >
                 Open Rescue Command <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -222,11 +224,11 @@ export default function DashboardPage() {
                 {needsAttention.map((item: any) => (
                   <div
                     key={item.lead_id}
-                    className="p-4 rounded-2xl bg-slate-900/90 border border-rose-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-rose-500/40 transition-colors"
+                    className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 hover:border-cyan-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors"
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Link href={`/leads/${item.lead_id}`} className="font-bold text-sm text-white hover:text-rose-400 hover:underline">
+                        <Link href={`/leads/${item.lead_id}`} className="font-bold text-sm text-white hover:text-cyan-400 hover:underline">
                           {item.lead_name}
                         </Link>
                         <span className="text-xs text-slate-400">({item.company})</span>
@@ -234,7 +236,7 @@ export default function DashboardPage() {
                         <ScoreBadge score={item.qualification_score} />
                       </div>
                       <div className="text-xs text-slate-400 flex items-center gap-4 flex-wrap">
-                        <span className="flex items-center gap-1 text-rose-400 font-semibold">
+                        <span className="flex items-center gap-1 text-purple-400 font-semibold">
                           <Clock className="w-3.5 h-3.5" /> Idle for {item.hours_idle} hours
                         </span>
                         <span>Interest: <strong className="text-slate-200">{item.product_interest}</strong></span>
@@ -250,7 +252,7 @@ export default function DashboardPage() {
                       <button
                         onClick={() => handleQuickRescue(item.lead_id, item.recommended_template_id)}
                         disabled={rescuingId === item.lead_id}
-                        className="px-3.5 py-2 rounded-xl rescue-gradient text-white text-xs font-semibold flex items-center gap-1.5 hover:opacity-95 transition-opacity disabled:opacity-50"
+                        className="px-3.5 py-2 rounded-xl rescue-gradient text-slate-950 text-xs font-black flex items-center gap-1.5 hover:opacity-95 transition-opacity disabled:opacity-50"
                       >
                         <Send className="w-3.5 h-3.5" />
                         {rescuingId === item.lead_id ? 'Dispatching...' : '1-Click Rescue'}

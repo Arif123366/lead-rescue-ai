@@ -10,19 +10,29 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          500: '#0284c7',
-          600: '#0284c7',
-          700: '#0369a1',
-          900: '#0c4a6e',
+          50: '#ecfeff',
+          100: '#cffafe',
+          400: '#22d3ee',
+          500: '#06b6d4',
+          600: '#0891b2',
+          neon: '#00f0ff',
         },
         rescue: {
-          50: '#fff1f2',
-          100: '#ffe4e6',
-          500: '#f43f5e',
-          600: '#e11d48',
-          700: '#be123c',
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          400: '#c084fc',
+          500: '#a855f7',
+          600: '#9333ea',
+          700: '#7e22ce',
+          neon: '#d946ef',
+        },
+        xilxil: {
+          cyan: '#00f0ff',
+          sky: '#00a8ff',
+          purple: '#a855f7',
+          violet: '#8b5cf6',
+          magenta: '#d946ef',
+          dark: '#030712'
         }
       },
     },

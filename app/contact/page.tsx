@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Flame, ArrowLeft, Mail, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Mail, MessageSquare, Send, CheckCircle2 } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
@@ -14,16 +15,11 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
       <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-6 py-4">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl rescue-gradient flex items-center justify-center text-white">
-              <Flame className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-white text-base">Lead Rescue AI</span>
-          </Link>
-          <Link href="/" className="text-xs text-slate-400 hover:text-white flex items-center gap-1">
+          <BrandLogo size="sm" showTagline={true} />
+          <Link href="/" className="text-xs text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors">
             <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
           </Link>
         </div>
@@ -54,7 +50,7 @@ export default function ContactPage() {
                   placeholder="John Doe"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
                 />
               </div>
               <div>
@@ -65,7 +61,7 @@ export default function ContactPage() {
                   placeholder="john@company.com"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
                 />
               </div>
             </div>
@@ -78,7 +74,7 @@ export default function ContactPage() {
                 placeholder="Enterprise Inquiry / Technical Support"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
               />
             </div>
 
@@ -90,13 +86,13 @@ export default function ContactPage() {
                 placeholder="Tell us about your team and requirement..."
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 resize-none"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 resize-none"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-white text-xs font-bold flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
+              className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-2 hover:opacity-95 transition-opacity"
             >
               <Send className="w-4 h-4" /> Send Message
             </button>
@@ -105,7 +101,7 @@ export default function ContactPage() {
       </main>
 
       <footer className="border-t border-slate-800 py-8 px-6 text-center text-xs text-slate-500">
-        &copy; {new Date().getFullYear()} Lead Rescue AI Inc. All rights reserved.
+        &copy; {new Date().getFullYear()} Lead Rescue AI &bull; POWERED BY XILXIL. All rights reserved.
       </footer>
     </div>
   );

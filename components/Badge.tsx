@@ -12,24 +12,24 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
     case 'Hot':
     case 'HOT':
       return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/30 rescue-glow ${className}`}>
-          <Flame className="w-3.5 h-3.5 animate-pulse text-rose-400" />
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/15 text-purple-300 border border-purple-500/40 neon-purple-glow ${className}`}>
+          <Flame className="w-3.5 h-3.5 animate-pulse text-purple-400" />
           Hot Lead
         </span>
       );
     case 'Warm':
     case 'WARM':
       return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30 ${className}`}>
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/40 neon-cyan-glow ${className}`}>
+          <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
           Warm Lead
         </span>
       );
     case 'Cold':
     case 'COLD':
       return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-700/40 text-slate-300 border border-slate-600/30 ${className}`}>
-          <Snowflake className="w-3.5 h-3.5 text-sky-400" />
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800/60 text-slate-300 border border-slate-700/50 ${className}`}>
+          <Snowflake className="w-3.5 h-3.5 text-slate-400" />
           Cold Lead
         </span>
       );
@@ -38,8 +38,8 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
     case 'PENDING_QUALIFICATION':
     case 'NEW':
       return (
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-400 border border-sky-500/30 ${className}`}>
-          <Clock className="w-3.5 h-3.5 animate-spin text-sky-400" />
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 ${className}`}>
+          <Clock className="w-3.5 h-3.5 animate-spin text-cyan-400" />
           AI Analyzing...
         </span>
       );
@@ -54,9 +54,9 @@ export function StatusBadge({ status, className = '' }: BadgeProps) {
 
 export function ScoreBadge({ score }: { score: number }) {
   let colorClass = 'bg-slate-800 text-slate-400 border-slate-700';
-  if (score >= 75) colorClass = 'bg-rose-500/20 text-rose-300 border-rose-500/40 font-bold';
-  else if (score >= 45) colorClass = 'bg-amber-500/20 text-amber-300 border-amber-500/40 font-semibold';
-  else if (score > 0) colorClass = 'bg-sky-500/20 text-sky-300 border-sky-500/40';
+  if (score >= 75) colorClass = 'bg-purple-500/20 text-purple-200 border-purple-500/50 font-bold neon-purple-glow';
+  else if (score >= 45) colorClass = 'bg-cyan-500/20 text-cyan-200 border-cyan-500/50 font-semibold neon-cyan-glow';
+  else if (score > 0) colorClass = 'bg-slate-800 text-slate-300 border-slate-700';
 
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs border font-mono ${colorClass}`}>

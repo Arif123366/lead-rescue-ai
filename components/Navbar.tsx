@@ -99,17 +99,29 @@ export function Navbar() {
     <header className="sticky top-0 z-40 w-full bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 px-4 lg:px-8 py-3 flex items-center justify-between">
       {/* Brand Logo & Org Info */}
       <div className="flex items-center gap-6">
-        <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 rounded-xl rescue-gradient flex items-center justify-center text-white rescue-glow group-hover:scale-105 transition-transform">
-            <Flame className="w-6 h-6 animate-pulse" />
+        <Link href="/dashboard" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl rescue-gradient flex items-center justify-center p-1 rescue-glow group-hover:scale-105 transition-transform border border-cyan-400/40">
+            <img
+              src="/icon.png"
+              alt="Lead Rescue AI"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]"
+            />
           </div>
           <div>
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-rose-400 bg-clip-text text-transparent">
-              Lead Rescue AI
-            </span>
-            <span className="block text-[10px] text-rose-400/90 uppercase tracking-widest font-semibold">
-              Autonomous Recovery
-            </span>
+            <div className="font-black text-lg tracking-tight leading-none flex items-center gap-1">
+              <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">
+                Lead
+              </span>
+              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+                Rescue <span className="text-cyan-300 font-extrabold">AI</span>
+              </span>
+            </div>
+            <div className="text-[9px] uppercase tracking-widest font-extrabold text-slate-400 flex items-center gap-1 mt-0.5">
+              <span>POWERED BY</span>
+              <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent font-black">
+                XILXIL
+              </span>
+            </div>
           </div>
         </Link>
 
@@ -117,11 +129,11 @@ export function Navbar() {
           <Link
             href="/settings?tab=billing"
             title="Manage Subscription Plans & Usage Limits"
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 hover:border-rose-500/50 hover:bg-slate-800 transition-all cursor-pointer group"
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900/90 border border-slate-800 text-xs text-slate-300 hover:border-cyan-500/50 hover:bg-slate-800 transition-all cursor-pointer group"
           >
-            <Building className="w-3.5 h-3.5 text-rose-400 group-hover:scale-110 transition-transform" />
+            <Building className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span className="font-medium truncate max-w-[180px]">{org.name}</span>
-            <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30 group-hover:bg-rose-500/30">
+            <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-gradient-to-r from-cyan-500/20 to-purple-500/20 text-cyan-300 border border-cyan-500/40 group-hover:border-purple-500/50">
               {org.plan_name}
             </span>
           </Link>
@@ -151,13 +163,13 @@ export function Navbar() {
             <div className="absolute right-0 mt-3 w-80 sm:w-96 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl p-4 z-50 animate-in fade-in zoom-in-95">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-4 h-4 text-rose-400" />
+                  <ShieldAlert className="w-4 h-4 text-purple-400" />
                   <h3 className="font-bold text-sm text-white">Notifications</h3>
                 </div>
                 {unreadCount > 0 && (
                   <button
                     onClick={() => markAsRead()}
-                    className="text-xs font-semibold text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-1"
+                    className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1"
                   >
                     <Check className="w-3.5 h-3.5" /> Mark all read
                   </button>
@@ -175,19 +187,19 @@ export function Navbar() {
                       className={`p-3 rounded-xl border text-xs cursor-pointer transition-colors ${
                         n.is_read
                           ? 'bg-slate-950/60 border-slate-800/80 text-slate-400'
-                          : 'bg-rose-950/40 border-rose-500/40 text-slate-200'
+                          : 'bg-purple-950/30 border-purple-500/40 text-slate-200'
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <p className="font-medium leading-relaxed">{n.message}</p>
-                        {!n.is_read && <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0 mt-1" />}
+                        {!n.is_read && <span className="w-2 h-2 rounded-full bg-purple-500 shrink-0 mt-1 shadow-[0_0_6px_rgba(168,85,247,0.8)]" />}
                       </div>
                       <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-mono">
                         <span>{new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         {n.related_entity_id && (
                           <Link
                             href={n.type === 'LEAD_RESCUE_ALERT' ? '/rescue' : `/leads/${n.related_entity_id}`}
-                            className="text-rose-400 hover:underline flex items-center gap-1"
+                            className="text-cyan-400 hover:underline flex items-center gap-1 font-semibold"
                           >
                             View Lead <ExternalLink className="w-2.5 h-2.5" />
                           </Link>
@@ -209,9 +221,9 @@ export function Navbar() {
                 setShowUserMenu(!showUserMenu);
                 setShowNotifications(false);
               }}
-              className="flex items-center gap-2.5 p-1.5 pl-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 transition-colors"
+              className="flex items-center gap-2.5 p-1.5 pl-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/30 transition-colors"
             >
-              <div className="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 font-bold flex items-center justify-center text-xs border border-rose-500/30">
+              <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 font-black flex items-center justify-center text-xs border border-cyan-500/40 shadow-[0_0_8px_rgba(0,240,255,0.2)]">
                 {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
               </div>
               <span className="hidden sm:block text-xs font-semibold text-slate-200 max-w-[120px] truncate">
@@ -225,7 +237,7 @@ export function Navbar() {
                 <div className="px-3 py-2 border-b border-slate-800/80">
                   <p className="text-xs font-semibold text-white truncate">{user.name}</p>
                   <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
-                  <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300">
+                  <span className="inline-block mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-cyan-300 border border-cyan-500/20">
                     {user.role}
                   </span>
                 </div>
@@ -239,9 +251,9 @@ export function Navbar() {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 transition-colors"
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
                   >
-                    <LogOut className="w-4 h-4 text-rose-400" /> Sign Out
+                    <LogOut className="w-4 h-4" /> Sign Out
                   </button>
                 </div>
               </div>

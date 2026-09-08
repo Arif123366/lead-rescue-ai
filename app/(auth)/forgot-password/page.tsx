@@ -37,18 +37,25 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col justify-between py-12 sm:px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-slate-950 flex flex-col justify-between py-12 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-cyan-500 selection:text-slate-950">
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div>
         <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl rescue-gradient rescue-glow mb-4 text-white">
-            <Flame className="w-8 h-8 animate-pulse" />
-          </div>
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">
-            Reset Password
-          </h2>
-          <p className="mt-2 text-sm text-slate-400">
+          <Link href="/" className="inline-block group">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl rescue-gradient rescue-glow mb-4 p-2 border border-cyan-400/40 group-hover:scale-105 transition-transform">
+              <img src="/icon.png" alt="Lead Rescue AI" className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(0,240,255,0.8)]" />
+            </div>
+            <h2 className="text-3xl font-black text-white tracking-tight flex items-center justify-center gap-1.5">
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Reset</span>
+              <span className="bg-gradient-to-r from-purple-400 to-fuchsia-400 bg-clip-text text-transparent">Password</span>
+            </h2>
+            <p className="text-[11px] font-extrabold tracking-widest uppercase text-slate-400 mt-1">
+              POWERED BY <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">XILXIL</span>
+            </p>
+          </Link>
+          <p className="mt-2 text-xs text-slate-400">
             Enter your registered email to receive reset instructions
           </p>
         </div>
@@ -57,7 +64,7 @@ export default function ForgotPasswordPage() {
           <div className="glass-panel p-8 rounded-3xl shadow-2xl border border-slate-800">
             {submitted ? (
               <div className="text-center py-4">
-                <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-4">
+                <div className="w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center mx-auto mb-4 neon-cyan-glow">
                   <CheckCircle2 className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-bold text-white mb-2">Reset Link Dispatched</h3>
@@ -66,7 +73,7 @@ export default function ForgotPasswordPage() {
                 </p>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-2 text-xs font-semibold text-rose-400 hover:underline"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-cyan-400 hover:underline"
                 >
                   <ArrowLeft className="w-4 h-4" /> Return to Sign In
                 </Link>
@@ -74,7 +81,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {error && (
-                  <div className="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                  <div className="p-3 rounded-xl bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -91,7 +98,7 @@ export default function ForgotPasswordPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-rose-500"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 text-sm text-white focus:outline-none focus:border-cyan-400"
                       placeholder="name@company.com"
                     />
                   </div>
@@ -100,13 +107,13 @@ export default function ForgotPasswordPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 px-4 rounded-xl rescue-gradient rescue-glow text-white font-semibold text-sm hover:opacity-95 transition-opacity disabled:opacity-50 mt-4"
+                  className="w-full py-3 px-4 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-sm hover:opacity-95 transition-opacity disabled:opacity-50 mt-4"
                 >
                   {loading ? 'Sending Request...' : 'Send Reset Link'}
                 </button>
 
                 <div className="mt-6 text-center">
-                  <Link href="/login" className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-white">
+                  <Link href="/login" className="inline-flex items-center gap-2 text-xs text-slate-400 hover:text-cyan-300 transition-colors">
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
                   </Link>
                 </div>
