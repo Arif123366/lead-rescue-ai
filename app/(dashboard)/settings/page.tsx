@@ -19,7 +19,16 @@ import {
   AlertCircle,
   X,
   Mail,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Edit2,
+  Play,
+  BookOpen,
+  Send,
+  Activity,
+  ExternalLink,
+  Code2,
+  ShieldCheck,
+  CheckCircle
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -62,6 +71,23 @@ export default function SettingsPage() {
   const [showSourceModal, setShowSourceModal] = useState(false);
   const [sourceName, setSourceName] = useState('');
   const [sourceType, setSourceType] = useState('Website Form');
+
+  // Webhook Testing, Integration Guide & Edit States
+  const [testingSourceId, setTestingSourceId] = useState<string | null>(null);
+  const [testSuccessMessage, setTestSuccessMessage] = useState<string | null>(null);
+  const [selectedGuideSource, setSelectedGuideSource] = useState<any | null>(null);
+  const [guideTab, setGuideTab] = useState<'curl' | 'json' | 'html' | 'platforms'>('curl');
+  const [editingSource, setEditingSource] = useState<any | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editType, setEditType] = useState('Website Form');
+  const [copiedSecretId, setCopiedSecretId] = useState<string | null>(null);
+  const [copiedSnippet, setCopiedSnippet] = useState(false);
+
+  const copySnippet = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedSnippet(true);
+    setTimeout(() => setCopiedSnippet(false), 2500);
+  };
 
   const [orgName, setOrgName] = useState('');
   const [copiedWebhookId, setCopiedWebhookId] = useState<string | null>(null);
@@ -195,24 +221,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleCreateSource = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await apiFetch('/api/v1/lead-sources', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: sourceName, type: sourceType })
-      });
-      if (res.ok) {
-        setShowSourceModal(false);
-        setSourceName('');
-        fetchSettingsData();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const [paymentPlan, setPaymentPlan] = useState<any>(null);
   const [selectedProvider, setSelectedProvider] = useState<'stripe' | 'payoneer'>('stripe');
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -267,11 +275,117 @@ export default function SettingsPage() {
     }
   };
 
+  const getCanonicalWebhookUrl = (src: any) => {
+    if (!src || src.type === 'Manual') return null;
+    const cfgUrl = src.configuration?.webhook_url;
+    if (cfgUrl && (cfgUrl.startsWith('http://') || cfgUrl.startsWith('https://'))) {
+      return cfgUrl;
+    }
+    const backendBase = process.env.NEXT_PUBLIC_API_URL || 'https://lead-rescue-ai-backend.onrender.com';
+    return `${backendBase.replace(/\/$/, '')}/api/v1/webhooks/lead-source/${src.id}`;
+  };
+
   const copyWebhook = (url: string, id: string) => {
-    const fullUrl = url.startsWith('http') ? url : `${window.location.origin}${url}`;
-    navigator.clipboard.writeText(fullUrl);
+    navigator.clipboard.writeText(url);
     setCopiedWebhookId(id);
     setTimeout(() => setCopiedWebhookId(null), 3000);
+  };
+
+  const copySecret = (secret: string, id: string) => {
+    navigator.clipboard.writeText(secret);
+    setCopiedSecretId(id);
+    setTimeout(() => setCopiedSecretId(null), 3000);
+  };
+
+  const handleTestWebhook = async (src: any) => {
+    setTestingSourceId(src.id);
+    setTestSuccessMessage(null);
+    try {
+      const res = await apiFetch(`/api/v1/lead-sources/${src.id}/test`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `Verified Test Lead (${src.name})`,
+          email: `test.${Date.now().toString().slice(-4)}@example.com`,
+          phone: '+1 (555) 019-2834',
+          company: 'Webhook Verification Corp',
+          deal_value: 3500,
+          product_interest: `Live verified inbound submission via ${src.name} webhook endpoint.`
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setTestSuccessMessage(`Successfully dispatched test lead to ${src.name}! Lead ID: ${data.lead_id}. AI qualification queued.`);
+        fetchSettingsData();
+        setTimeout(() => setTestSuccessMessage(null), 8000);
+      } else {
+        alert(data.error || 'Failed to trigger test webhook');
+      }
+    } catch (err: any) {
+      alert(`Webhook Test Error: ${err.message}`);
+    } finally {
+      setTestingSourceId(null);
+    }
+  };
+
+  const handleCreateSource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await apiFetch('/api/v1/lead-sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: sourceName, type: sourceType })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setShowSourceModal(false);
+        setSourceName('');
+        setSourceType('Website Form');
+        setTestSuccessMessage(`Lead source "${sourceName}" created successfully with dedicated webhook endpoint!`);
+        fetchSettingsData();
+        setTimeout(() => setTestSuccessMessage(null), 8000);
+      } else {
+        alert(data.error || 'Failed to create lead source');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleUpdateSource = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSource) return;
+    try {
+      const res = await apiFetch(`/api/v1/lead-sources/${editingSource.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, type: editType })
+      });
+      if (res.ok) {
+        setEditingSource(null);
+        fetchSettingsData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to update lead source');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteSource = async (sourceId: string) => {
+    if (!confirm('Are you sure you want to remove this lead capture source?')) return;
+    try {
+      const res = await apiFetch(`/api/v1/lead-sources/${sourceId}`, { method: 'DELETE' });
+      if (res.ok) {
+        fetchSettingsData();
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Failed to delete lead source');
+      }
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
   const copyInviteLink = (url: string) => {
@@ -619,9 +733,12 @@ export default function SettingsPage() {
             <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
-                  <h2 className="text-sm sm:text-base font-bold text-white">Lead Capture Sources &amp; Webhook Endpoints</h2>
+                  <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    <Globe className="w-5 h-5 text-cyan-400" />
+                    Lead Capture Sources &amp; Webhook Endpoints
+                  </h2>
                   <p className="text-[11px] text-slate-400 mt-0.5">
-                    Incoming leads sent to these webhook URLs trigger automatic AI qualification &amp; CRM insertion.
+                    Incoming leads sent to these live endpoints trigger automatic AI qualification, CRM pipeline insertion, and real-time alert notifications.
                   </p>
                 </div>
 
@@ -633,33 +750,191 @@ export default function SettingsPage() {
                 </button>
               </div>
 
-              <div className="space-y-3">
+              {/* Test Notification Banner */}
+              {testSuccessMessage && (
+                <div className="p-3.5 rounded-2xl bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between gap-2 shadow-[0_0_15px_rgba(16,185,129,0.2)] animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span className="font-medium">{testSuccessMessage}</span>
+                  </div>
+                  <button onClick={() => setTestSuccessMessage(null)} className="text-emerald-400 hover:text-white p-1">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              <div className="space-y-4">
                 {sources.map((src) => {
-                  const webhookUrl = src.configuration?.webhook_url || `/api/v1/webhooks/lead-source/${src.id}`;
+                  const canonicalUrl = getCanonicalWebhookUrl(src);
+                  const isManual = src.type === 'Manual';
+                  const totalReceived = src.configuration?.total_received || 0;
+                  const lastReceived = src.configuration?.last_received_at;
+
                   return (
-                    <div key={src.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-cyan-400" />
-                          <h3 className="font-bold text-white text-sm">{src.name}</h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300 font-mono border border-slate-700">
-                            {src.type}
+                    <div key={src.id} className="p-4 sm:p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3.5 text-xs shadow-lg hover:border-cyan-500/30 transition-all">
+                      {/* Source Header */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center border flex-shrink-0 ${
+                            src.type.includes('Facebook')
+                              ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                              : src.type.includes('WhatsApp')
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                              : src.type === 'Manual'
+                              ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                              : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
+                          }`}>
+                            {src.type.includes('Facebook') ? (
+                              <Globe className="w-4 h-4" />
+                            ) : src.type.includes('WhatsApp') ? (
+                              <Zap className="w-4 h-4" />
+                            ) : src.type === 'Manual' ? (
+                              <Users className="w-4 h-4" />
+                            ) : (
+                              <Globe className="w-4 h-4" />
+                            )}
+                          </div>
+
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-white text-sm sm:text-base">{src.name}</h3>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300 font-mono border border-slate-700">
+                                {src.type}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Live Status Indicator */}
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 ml-auto sm:ml-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            {isManual ? 'Internal Active' : 'Live Endpoint'}
                           </span>
+
+                          {!isManual && (
+                            <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                              Ingested: <strong className="text-cyan-400">{totalReceived}</strong> leads
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Edit & Delete Controls */}
+                        <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                          <button
+                            onClick={() => {
+                              setEditingSource(src);
+                              setEditName(src.name);
+                              setEditType(src.type);
+                            }}
+                            title="Edit Lead Source Name & Type"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          {sources.length > 1 && (
+                            <button
+                              onClick={() => handleDeleteSource(src.id)}
+                              title="Delete Lead Source"
+                              className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
-                        <div className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-300 font-mono text-[11px] truncate">
-                          {typeof window !== 'undefined' ? window.location.origin : ''}{webhookUrl}
+                      {/* Manual Entry Specific UI */}
+                      {isManual ? (
+                        <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-slate-300 text-xs">
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            Built-in direct manual entry is active. Sales reps and admins can manually create leads anytime through the Leads Table or Smart CRM Kanban board.
+                          </p>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <a
+                              href="/leads"
+                              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+                            >
+                              <Users className="w-3.5 h-3.5" /> Leads Table
+                            </a>
+                            <a
+                              href="/crm"
+                              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-purple-300 font-semibold text-xs flex items-center gap-1.5 transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" /> CRM Board
+                            </a>
+                          </div>
                         </div>
-                        <button
-                          onClick={() => copyWebhook(webhookUrl, src.id)}
-                          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white font-semibold flex items-center justify-center gap-1.5 shrink-0 transition-colors min-h-[38px]"
-                        >
-                          {copiedWebhookId === src.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-400" />}
-                          {copiedWebhookId === src.id ? 'Copied!' : 'Copy Webhook URL'}
-                        </button>
-                      </div>
+                      ) : (
+                        /* Webhook URL & Action Buttons */
+                        <div className="space-y-2">
+                          <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
+                            {/* URL Box */}
+                            <div
+                              title={canonicalUrl || ''}
+                              className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-[11px] truncate select-all shadow-inner"
+                            >
+                              {canonicalUrl}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap shrink-0">
+                              <button
+                                onClick={() => canonicalUrl && copyWebhook(canonicalUrl, src.id)}
+                                className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white font-semibold flex items-center justify-center gap-1.5 transition-colors min-h-[38px] border border-slate-700/60"
+                              >
+                                {copiedWebhookId === src.id ? (
+                                  <>
+                                    <Check className="w-4 h-4 text-emerald-400" />
+                                    <span className="text-emerald-400">Copied!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-4 h-4 text-slate-400" />
+                                    <span>Copy URL</span>
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => handleTestWebhook(src)}
+                                disabled={testingSourceId === src.id}
+                                className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl rescue-gradient text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition-all min-h-[38px] disabled:opacity-50"
+                              >
+                                {testingSourceId === src.id ? (
+                                  <>
+                                    <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                                    <span>Testing...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Send className="w-3.5 h-3.5" />
+                                    <span>Test Webhook</span>
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                onClick={() => setSelectedGuideSource(src)}
+                                className="flex-1 sm:flex-none px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors min-h-[38px] border border-slate-800"
+                              >
+                                <BookOpen className="w-3.5 h-3.5 text-purple-400" />
+                                <span>Guide &amp; cURL</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Telemetry and Meta Footer */}
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 pt-0.5">
+                            <span>
+                              {lastReceived
+                                ? `Last payload received: ${new Date(lastReceived).toLocaleString()}`
+                                : 'Ready for incoming HTTP POST • Supports JSON, Form-data & Webhooks'}
+                            </span>
+                            <span className="text-slate-500 font-mono hidden sm:inline">
+                              Format: JSON / Form-Urlencoded / Facebook Leads
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1198,12 +1473,370 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* LEAD SOURCE MODAL */}
+      {/* LEAD SOURCE INTEGRATION GUIDE MODAL */}
+      {selectedGuideSource && (
+        <div className="fixed inset-0 z-50 glass-panel bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-2xl space-y-4 shadow-2xl animate-in fade-in zoom-in-95 my-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
+                  <Code2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base flex items-center gap-2">
+                    Webhook Integration Guide
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                      Live
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    {selectedGuideSource.name} ({selectedGuideSource.type})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedGuideSource(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Webhook Endpoint Box */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+                Production Webhook URL
+              </label>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                <span className="flex-1 font-mono text-[11px] text-cyan-300 break-all select-all">
+                  {getCanonicalWebhookUrl(selectedGuideSource)}
+                </span>
+                <button
+                  onClick={() => {
+                    const url = getCanonicalWebhookUrl(selectedGuideSource);
+                    if (url) copyWebhook(url, selectedGuideSource.id);
+                  }}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-white font-semibold flex items-center gap-1 shrink-0 transition-colors"
+                >
+                  {copiedWebhookId === selectedGuideSource.id ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-400">Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Guide Tabs */}
+            <div className="flex items-center gap-1 border-b border-slate-800 pb-2 overflow-x-auto text-xs">
+              <button
+                onClick={() => setGuideTab('curl')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                  guideTab === 'curl'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Code2 className="w-3.5 h-3.5" /> cURL Command
+              </button>
+              <button
+                onClick={() => setGuideTab('json')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                  guideTab === 'json'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" /> JSON Schema
+              </button>
+              <button
+                onClick={() => setGuideTab('html')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                  guideTab === 'html'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" /> HTML / JS Form
+              </button>
+              <button
+                onClick={() => setGuideTab('platforms')}
+                className={`px-3 py-1.5 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+                  guideTab === 'platforms'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" /> Meta &amp; Zapier
+              </button>
+            </div>
+
+            {/* Tab Contents */}
+            <div className="text-xs space-y-3">
+              {/* cURL TAB */}
+              {guideTab === 'curl' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <span>Send a real test lead from your terminal or API tester:</span>
+                    <button
+                      onClick={() => {
+                        const url = getCanonicalWebhookUrl(selectedGuideSource);
+                        const cmd = `curl -X POST "${url}" \\\n  -H "Content-Type: application/json" \\\n  -d '{\n    "name": "Alex Johnson",\n    "email": "alex.j@enterprise.com",\n    "phone": "+1 (555) 234-5678",\n    "company": "Apex Dynamics Corp",\n    "deal_value": 4500,\n    "notes": "Inbound inquiry for enterprise sales lead qualification"\n  }'`;
+                        copySnippet(cmd);
+                      }}
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 font-semibold flex items-center gap-1"
+                    >
+                      {copiedSnippet ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedSnippet ? 'Copied' : 'Copy cURL'}
+                    </button>
+                  </div>
+                  <pre className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-cyan-300 font-mono text-[11px] overflow-x-auto leading-relaxed">
+{`curl -X POST "${getCanonicalWebhookUrl(selectedGuideSource)}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "Alex Johnson",
+    "email": "alex.j@enterprise.com",
+    "phone": "+1 (555) 234-5678",
+    "company": "Apex Dynamics Corp",
+    "deal_value": 4500,
+    "notes": "Inbound inquiry for enterprise sales lead qualification"
+  }'`}
+                  </pre>
+                </div>
+              )}
+
+              {/* JSON SCHEMA TAB */}
+              {guideTab === 'json' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <span>Standard JSON schema accepted by our ingestion pipeline:</span>
+                    <button
+                      onClick={() => {
+                        const schema = `{\n  "name": "Alex Johnson",\n  "email": "alex.j@enterprise.com",\n  "phone": "+1 (555) 234-5678",\n  "company": "Apex Dynamics Corp",\n  "deal_value": 4500,\n  "notes": "Inbound inquiry for enterprise sales lead qualification"\n}`;
+                        copySnippet(schema);
+                      }}
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 font-semibold flex items-center gap-1"
+                    >
+                      {copiedSnippet ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedSnippet ? 'Copied' : 'Copy JSON'}
+                    </button>
+                  </div>
+                  <pre className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-emerald-300 font-mono text-[11px] overflow-x-auto leading-relaxed">
+{`{
+  "name": "Alex Johnson",               // (string) Lead full name or contact name
+  "email": "alex.j@enterprise.com",     // (string) Lead email address
+  "phone": "+1 (555) 234-5678",         // (string) Phone number
+  "company": "Apex Dynamics Corp",       // (string) Company or Organization
+  "deal_value": 4500,                   // (number) Estimated deal / contract value
+  "notes": "Interested in sales AI..."   // (string) Customer inquiry / product interest
+}`}
+                  </pre>
+                  <p className="text-[11px] text-slate-400">
+                    <strong>Flexible Mapping:</strong> The webhook engine also supports aliases: <code className="text-cyan-400">first_name</code>, <code className="text-cyan-400">last_name</code>, <code className="text-cyan-400">full_name</code>, <code className="text-cyan-400">contact_phone</code>, <code className="text-cyan-400">mobile</code>, <code className="text-cyan-400">product_interest</code>, and <code className="text-cyan-400">budget</code>.
+                  </p>
+                </div>
+              )}
+
+              {/* HTML FORM TAB */}
+              {guideTab === 'html' && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <span>Ready-to-embed website form (works on Webflow, WordPress, HTML):</span>
+                    <button
+                      onClick={() => {
+                        const url = getCanonicalWebhookUrl(selectedGuideSource);
+                        const htmlCode = `<!-- Lead Rescue AI Inbound Form -->\n<form id="leadRescueForm">\n  <input type="text" name="name" placeholder="Full Name" required />\n  <input type="email" name="email" placeholder="Work Email" required />\n  <input type="tel" name="phone" placeholder="Phone Number" />\n  <input type="text" name="company" placeholder="Company Name" />\n  <textarea name="notes" placeholder="How can we assist you?"></textarea>\n  <button type="submit">Submit Inquiry</button>\n</form>\n\n<script>\n  document.getElementById('leadRescueForm').addEventListener('submit', async (e) => {\n    e.preventDefault();\n    const formData = new FormData(e.target);\n    const payload = Object.fromEntries(formData.entries());\n    try {\n      const response = await fetch('${url}', {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(payload)\n      });\n      if (response.ok) alert('Inquiry received! Our AI is preparing qualification.');\n    } catch (err) {\n      console.error(err);\n    }\n  });\n</script>`;
+                        copySnippet(htmlCode);
+                      }}
+                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-cyan-300 font-semibold flex items-center gap-1"
+                    >
+                      {copiedSnippet ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedSnippet ? 'Copied' : 'Copy HTML & JS'}
+                    </button>
+                  </div>
+                  <pre className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-purple-300 font-mono text-[11px] overflow-x-auto leading-relaxed max-h-48">
+{`<!-- Lead Rescue AI Inbound Form -->
+<form id="leadRescueForm">
+  <input type="text" name="name" placeholder="Full Name" required />
+  <input type="email" name="email" placeholder="Work Email" required />
+  <input type="tel" name="phone" placeholder="Phone Number" />
+  <input type="text" name="company" placeholder="Company Name" />
+  <textarea name="notes" placeholder="How can we assist you?"></textarea>
+  <button type="submit">Submit Inquiry</button>
+</form>
+
+<script>
+  document.getElementById('leadRescueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = Object.fromEntries(formData.entries());
+    const res = await fetch('${getCanonicalWebhookUrl(selectedGuideSource)}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) alert('Inquiry received! AI qualification in progress.');
+  });
+</script>`}
+                  </pre>
+                </div>
+              )}
+
+              {/* PLATFORMS TAB */}
+              {guideTab === 'platforms' && (
+                <div className="space-y-3 text-[11px] text-slate-300">
+                  {/* Meta Facebook Leads */}
+                  <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <div className="flex items-center gap-2 text-blue-400 font-bold">
+                      <Globe className="w-4 h-4" /> Facebook Lead Ads / Meta Graph API
+                    </div>
+                    <ol className="list-decimal list-inside space-y-1 text-slate-400 pl-1">
+                      <li>In Meta Developer Portal / Events Manager, navigate to <strong>Webhooks &gt; Leadgen</strong>.</li>
+                      <li>Paste the <strong>Production Webhook URL</strong> into the Callback URL field.</li>
+                      <li>Paste the Secret: <code className="text-cyan-300 font-mono select-all">{selectedGuideSource.configuration?.secret || selectedGuideSource.configuration?.webhook_secret || 'sec_lead_rescue_live'}</code> into the <strong>Verify Token</strong> field.</li>
+                      <li>Click <strong>Verify and Save</strong>. Lead Rescue AI automatically fulfills Meta's challenge handshake.</li>
+                    </ol>
+                  </div>
+
+                  {/* Zapier / Make.com */}
+                  <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 space-y-1.5">
+                    <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                      <Zap className="w-4 h-4" /> Zapier, Make.com, n8n, &amp; Typeform
+                    </div>
+                    <ol className="list-decimal list-inside space-y-1 text-slate-400 pl-1">
+                      <li>Create a trigger in Zapier or Make (e.g., Google Forms, Calendly, Jotform, Unbounce).</li>
+                      <li>Add action: <strong>Webhooks by Zapier &gt; POST</strong>.</li>
+                      <li>Set URL to the <strong>Production Webhook URL</strong> above with Payload Type <strong>JSON</strong>.</li>
+                      <li>Map your lead's name, email, phone, and company into the payload fields.</li>
+                    </ol>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-3 border-t border-slate-800">
+              <button
+                onClick={() => handleTestWebhook(selectedGuideSource)}
+                disabled={testingSourceId === selectedGuideSource.id}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl rescue-gradient text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md hover:brightness-110 transition-all min-h-[38px] disabled:opacity-50"
+              >
+                {testingSourceId === selectedGuideSource.id ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <span>Sending Test Lead...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Send Live Test Lead Now</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                onClick={() => setSelectedGuideSource(null)}
+                className="w-full sm:w-auto px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT LEAD SOURCE MODAL */}
+      {editingSource && (
+        <div className="fixed inset-0 z-50 glass-panel bg-black/60 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <Edit2 className="w-4 h-4 text-cyan-400" /> Edit Lead Source
+              </h3>
+              <button onClick={() => setEditingSource(null)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateSource} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Source Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold text-slate-300 mb-1">Source Type</label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
+                >
+                  <option value="Website Form">Website Form (Webhook)</option>
+                  <option value="Facebook Leads">Facebook Lead Ads</option>
+                  <option value="WhatsApp">WhatsApp Business API</option>
+                  <option value="Manual">Manual Entry / Direct CRM</option>
+                </select>
+              </div>
+
+              {/* Secret Display */}
+              {editingSource.configuration?.secret && (
+                <div>
+                  <label className="block font-semibold text-slate-300 mb-1">Webhook Secret / Verify Token</label>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-slate-300">
+                    <span className="truncate flex-1">{editingSource.configuration.secret}</span>
+                    <button
+                      type="button"
+                      onClick={() => copySecret(editingSource.configuration.secret, editingSource.id)}
+                      className="px-2 py-1 rounded bg-slate-800 text-slate-300 hover:text-white text-[10px] font-semibold flex items-center gap-1"
+                    >
+                      {copiedSecretId === editingSource.id ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      {copiedSecretId === editingSource.id ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingSource(null)}
+                  className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl rescue-gradient text-slate-950 font-black text-xs shadow-md hover:brightness-110 transition-all"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD LEAD SOURCE MODAL */}
       {showSourceModal && (
         <div className="fixed inset-0 z-50 glass-panel bg-black/60 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-bold text-white text-base">Add Lead Source</h3>
+              <h3 className="font-bold text-white text-base flex items-center gap-2">
+                <Plus className="w-4 h-4 text-cyan-400" /> Add Lead Source &amp; Webhook
+              </h3>
               <button onClick={() => setShowSourceModal(false)} className="text-slate-400 hover:text-white">
                 <X className="w-5 h-5" />
               </button>
@@ -1217,8 +1850,8 @@ export default function SettingsPage() {
                   required
                   value={sourceName}
                   onChange={(e) => setSourceName(e.target.value)}
-                  placeholder="e.g. Main Landing Page Form"
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-rose-500"
+                  placeholder="e.g. Landing Page Contact Form, FB Campaign 2026..."
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
                 />
               </div>
 
@@ -1227,20 +1860,24 @@ export default function SettingsPage() {
                 <select
                   value={sourceType}
                   onChange={(e) => setSourceType(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400"
                 >
-                  <option value="Website Form">Website Form (Webhook)</option>
-                  <option value="WhatsApp">WhatsApp Business API</option>
-                  <option value="Facebook Leads">Facebook Lead Ads</option>
-                  <option value="Manual">Manual / CSV Import</option>
+                  <option value="Website Form">Website Form (Dedicated Webhook Endpoint)</option>
+                  <option value="Facebook Leads">Facebook Lead Ads (Meta Graph Webhook)</option>
+                  <option value="WhatsApp">WhatsApp Inbound (Wasender / Twilio API)</option>
+                  <option value="Manual">Manual Entry / Direct CRM (No Webhook)</option>
                 </select>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
+                <span className="text-cyan-400 font-semibold">Automatic Provisioning:</span> When created, an instant canonical webhook endpoint and security token will be allocated for this source with automated AI qualification pipelines.
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl rescue-gradient rescue-glow text-white font-semibold mt-4"
+                className="w-full py-2.5 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-xs mt-4 shadow-lg hover:brightness-110 transition-all"
               >
-                Generate Webhook Endpoint
+                Provision Webhook Endpoint
               </button>
             </form>
           </div>

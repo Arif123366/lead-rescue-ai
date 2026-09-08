@@ -20,21 +20,131 @@ function sanitize(str) {
   return str.replace(/<[^>]*>?/gm, '').trim();
 }
 
+// ─── Enable CORS & Preflight for Webhooks ───────────────────────────────────
+// Webhooks are public endpoints called by external platforms (Facebook, Zapier, Webflow, WordPress, etc.)
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-lead-rescue-signature, x-hub-signature-256');
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  next();
+});
+
+function extractLeadFromPayload(rawBody) {
+  let body = rawBody || {};
+  let payload = body.data || body.lead || body.fields || body;
+
+  // Facebook Lead Ads webhook format: entry[0].changes[0].value.field_data
+  if (body.entry && Array.isArray(body.entry)) {
+    for (const entry of body.entry) {
+      if (entry.changes && Array.isArray(entry.changes)) {
+        for (const change of entry.changes) {
+          if (change.value && Array.isArray(change.value.field_data)) {
+            payload = { ...payload };
+            for (const field of change.value.field_data) {
+              if (field.name && Array.isArray(field.values) && field.values.length > 0) {
+                payload[field.name] = field.values[0];
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Typeform webhook format: form_response.answers
+  if (body.form_response && Array.isArray(body.form_response.answers)) {
+    payload = { ...payload };
+    for (const ans of body.form_response.answers) {
+      const val = ans.text || ans.email || ans.phone_number || ans.choice?.label || ans.number;
+      const key = ans.field?.title || ans.field?.ref || ans.type;
+      if (key && val) payload[key] = val;
+    }
+  }
+
+  // Normalize all keys (lowercase and stripped of spaces/dashes/underscores)
+  const normalized = {};
+  if (typeof payload === 'object' && payload !== null) {
+    for (const [k, v] of Object.entries(payload)) {
+      if (v !== undefined && v !== null) {
+        const cleanKey = k.toLowerCase().replace(/[\s\-_]/g, '');
+        normalized[cleanKey] = v;
+      }
+    }
+  }
+
+  const findVal = (keys) => {
+    for (const k of keys) {
+      const clean = k.toLowerCase().replace(/[\s\-_]/g, '');
+      if (normalized[clean] !== undefined) return String(normalized[clean]).trim();
+    }
+    return undefined;
+  };
+
+  const firstName = findVal(['first_name', 'firstname', 'fname', 'first', 'given_name']) || '';
+  const lastName = findVal(['last_name', 'lastname', 'lname', 'last', 'surname', 'family_name']) || '';
+
+  let name = findVal(['name', 'full_name', 'fullname', 'contact_name', 'client_name', 'your_name', 'lead_name', 'user_name']);
+  if (!name && (firstName || lastName)) {
+    name = `${firstName} ${lastName}`.trim();
+  }
+
+  const email = findVal(['email', 'email_address', 'emailaddress', 'contact_email', 'your_email', 'mail', 'user_email']);
+  const phone = findVal(['phone', 'phone_number', 'phonenumber', 'mobile', 'mobile_number', 'contact_phone', 'tel', 'telephone', 'whatsapp']);
+  const company = findVal(['company', 'company_name', 'companyname', 'organization', 'org_name', 'business_name', 'agency']);
+  const notes = findVal(['notes', 'message', 'product_interest', 'interest', 'subject', 'comments', 'inquiry', 'body', 'description', 'details']) || 'Inbound Webhook Lead';
+  const dealValueStr = findVal(['deal_value', 'dealvalue', 'estimated_budget', 'budget', 'amount', 'value', 'price', 'revenue']);
+  const dealValue = dealValueStr ? parseFloat(dealValueStr) || undefined : undefined;
+
+  if (!name) {
+    if (email) {
+      const prefix = email.split('@')[0].replace(/[._-]/g, ' ');
+      name = prefix.charAt(0).toUpperCase() + prefix.slice(1);
+    } else if (phone) {
+      name = `Inbound Lead (${phone})`;
+    } else {
+      name = 'Inbound Webhook Lead';
+    }
+  }
+
+  return {
+    name: sanitize(name),
+    email: email ? sanitize(email) : undefined,
+    phone: phone ? sanitize(phone) : undefined,
+    company: company ? sanitize(company) : undefined,
+    productInterest: sanitize(notes),
+    dealValue: dealValue || undefined
+  };
+}
+
 // ─── Lead Source Webhooks ───────────────────────────────────────────────────
 
 router.get('/lead-source/:id', async (req, res) => {
   try {
-    const source = await get('SELECT id, name, type, is_active FROM lead_sources WHERE id = ?', [req.params.id]);
+    // Facebook Webhook Verification Handshake
+    if (req.query['hub.mode'] === 'subscribe' && req.query['hub.challenge']) {
+      return res.status(200).send(req.query['hub.challenge']);
+    }
+
+    const source = await get('SELECT id, name, type, is_active, configuration FROM lead_sources WHERE id = ?', [req.params.id]);
     if (!source || !source.is_active) {
       return res.status(404).json({ status: 'inactive', error: 'Lead source webhook is inactive or not found.' });
     }
+
+    let config = {};
+    try { config = typeof source.configuration === 'string' ? JSON.parse(source.configuration) : (source.configuration || {}); } catch {}
 
     return res.json({
       status: 'active',
       message: 'Lead Rescue AI Webhook Endpoint Ready.',
       source_id: source.id,
       source_name: source.name,
-      source_type: source.type
+      source_type: source.type,
+      total_received: config.total_received || 0,
+      last_received_at: config.last_received_at || null,
+      timestamp: new Date().toISOString()
     });
   } catch (err) {
     return res.status(500).json({ error: err.message || 'Webhook status check failed' });
@@ -45,8 +155,6 @@ router.get('/lead-source/:id', async (req, res) => {
 
 router.post('/leads', async (req, res) => {
   try {
-    const payload = req.body.data || req.body.lead || req.body.fields || req.body;
-
     const signature = req.headers['x-lead-rescue-signature'] || req.headers['x-hub-signature-256'];
     const webhookSecret = process.env.WEBHOOK_SECRET || 'lead_rescue_webhook_secret_key';
 
@@ -58,12 +166,7 @@ router.post('/leads', async (req, res) => {
       }
     }
 
-    const name = sanitize(payload.name || payload.full_name || `${payload.first_name || ''} ${payload.last_name || ''}`.trim() || 'Inbound Webhook Lead');
-    const email = sanitize(payload.email || payload.email_address || undefined);
-    const phone = sanitize(payload.phone || payload.phone_number || undefined);
-    const company = sanitize(payload.company || payload.organization || undefined);
-    const productInterest = sanitize(payload.product_interest || payload.interest || payload.message || 'Inbound Webhook Inquiry');
-    const dealValue = parseFloat(payload.deal_value || payload.estimated_budget || '0') || undefined;
+    const extracted = extractLeadFromPayload(req.body);
 
     let source = await get("SELECT * FROM lead_sources WHERE is_active = 1 LIMIT 1");
     if (!source) {
@@ -76,29 +179,30 @@ router.post('/leads', async (req, res) => {
     const leadId = cryptoNativeOrRandomUUID();
 
     await run(
-      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, NOW(), NOW())`,
+      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, ?, NOW(), NOW())`,
       [
         leadId,
         source.organization_id,
-        name,
-        email || null,
-        phone || null,
-        company || null,
-        productInterest,
+        extracted.name,
+        extracted.email || null,
+        extracted.phone || null,
+        extracted.company || null,
+        extracted.productInterest,
         source.id,
         initialStage?.id || null,
-        dealValue || null
+        extracted.dealValue || null,
+        extracted.productInterest || null
       ]
     );
 
     const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
       leadId,
-      name,
-      email,
-      phone,
-      company,
-      product_interest: productInterest,
+      name: extracted.name,
+      email: extracted.email,
+      phone: extracted.phone,
+      company: extracted.company,
+      product_interest: extracted.productInterest,
       source_name: source.name
     });
 
@@ -122,38 +226,20 @@ router.post('/lead-source/:id', async (req, res) => {
     }
 
     // Optional HMAC signature check if header exists
-    const signature = req.headers['x-lead-rescue-signature'];
+    const signature = req.headers['x-lead-rescue-signature'] || req.headers['x-hub-signature-256'];
     let sourceConfig = {};
-    try { sourceConfig = JSON.parse(source.configuration || '{}'); } catch {}
+    try { sourceConfig = typeof source.configuration === 'string' ? JSON.parse(source.configuration) : (source.configuration || {}); } catch {}
 
-    if (sourceConfig.secret && signature) {
-      const computed = crypto.createHmac('sha256', sourceConfig.secret).update(JSON.stringify(req.body)).digest('hex');
-      if (computed !== signature) {
+    const secretKey = sourceConfig.secret || sourceConfig.webhook_secret;
+    if (secretKey && signature) {
+      const computed = crypto.createHmac('sha256', secretKey).update(JSON.stringify(req.body)).digest('hex');
+      const expected = signature.replace(/^sha256=/i, '');
+      if (computed !== expected && signature !== computed) {
         return res.status(401).json({ error: 'Invalid HMAC signature' });
       }
     }
 
-    let name = 'Inbound Lead';
-    let email, phone, company;
-    let productInterest = 'Inbound Inquiry';
-    let dealValue;
-
-    const payload = req.body.data || req.body.lead || req.body.fields || req.body;
-
-    const firstName = sanitize(payload.first_name || payload.firstname || '');
-    const lastName = sanitize(payload.last_name || payload.lastname || '');
-
-    if (payload.name || payload.full_name || payload.contact_name) {
-      name = sanitize(payload.name || payload.full_name || payload.contact_name);
-    } else if (firstName || lastName) {
-      name = `${firstName} ${lastName}`.trim();
-    }
-
-    email = sanitize(payload.email || payload.email_address || payload.contact_email || undefined);
-    phone = sanitize(payload.phone || payload.phone_number || payload.mobile || payload.contact_phone || undefined);
-    company = sanitize(payload.company || payload.company_name || payload.organization || undefined);
-    productInterest = sanitize(payload.product_interest || payload.interest || payload.message || payload.notes || payload.subject || 'Inbound Webhook Inquiry');
-    dealValue = parseFloat(payload.deal_value || payload.estimated_budget || payload.budget || '0') || undefined;
+    const extracted = extractLeadFromPayload(req.body);
 
     const orgInfo = await get(
       `SELECT o.id, sp.lead_limit, (SELECT COUNT(*) FROM leads WHERE organization_id = o.id) as actual_leads
@@ -175,29 +261,48 @@ router.post('/lead-source/:id', async (req, res) => {
     const leadId = cryptoNativeOrRandomUUID();
 
     await run(
-      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, NOW(), NOW())`,
+      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, ?, NOW(), NOW())`,
       [
         leadId,
         source.organization_id,
-        name,
-        email || null,
-        phone || null,
-        company || null,
-        productInterest,
+        extracted.name,
+        extracted.email || null,
+        extracted.phone || null,
+        extracted.company || null,
+        extracted.productInterest,
         source.id,
         initialStage?.id || null,
-        dealValue || null
+        extracted.dealValue || null,
+        extracted.productInterest || null
       ]
     );
 
+    // Update telemetry on source configuration
+    try {
+      const updatedConfig = {
+        ...sourceConfig,
+        total_received: (sourceConfig.total_received || 0) + 1,
+        last_received_at: new Date().toISOString(),
+        last_payload_preview: {
+          name: extracted.name,
+          email: extracted.email || null,
+          phone: extracted.phone || null,
+          timestamp: new Date().toISOString()
+        }
+      };
+      await run('UPDATE lead_sources SET configuration = ?, updated_at = NOW() WHERE id = ?', [JSON.stringify(updatedConfig), source.id]);
+    } catch (telemetryErr) {
+      console.warn('[Webhook Telemetry Error]:', telemetryErr.message);
+    }
+
     const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
       leadId,
-      name,
-      email,
-      phone,
-      company,
-      product_interest: productInterest,
+      name: extracted.name,
+      email: extracted.email,
+      phone: extracted.phone,
+      company: extracted.company,
+      product_interest: extracted.productInterest,
       source_name: source.name
     });
 
@@ -205,7 +310,15 @@ router.post('/lead-source/:id', async (req, res) => {
       success: true,
       message: 'Lead captured successfully via webhook and queued for AI qualification.',
       lead_id: leadId,
-      job_id: jobId
+      job_id: jobId,
+      lead: {
+        name: extracted.name,
+        email: extracted.email,
+        phone: extracted.phone,
+        company: extracted.company,
+        deal_value: extracted.dealValue,
+        source_name: source.name
+      }
     });
   } catch (error) {
     console.error('[Lead Source Webhook Exception]:', error);

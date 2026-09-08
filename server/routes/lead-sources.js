@@ -12,10 +12,11 @@ const { query, get, run } = require('../../lib/db/db');
 const { getCurrentUser } = require('../../lib/auth/auth');
 
 function getFullWebhookUrl(req, sourceId) {
-  const forwardedProto = req.headers['x-forwarded-proto'];
-  const protocol = forwardedProto ? forwardedProto.split(',')[0] : req.protocol || 'https';
-  const host = req.get('host');
-  const baseUrl = process.env.BACKEND_URL || process.env.API_URL || `${protocol}://${host}`;
+  const forwardedProto = req && req.headers ? req.headers['x-forwarded-proto'] : null;
+  const protocol = forwardedProto ? forwardedProto.split(',')[0] : (req && req.protocol ? req.protocol : 'https');
+  const host = req && req.get ? req.get('host') : (req && req.headers ? req.headers.host : null);
+  const detectedBase = host ? `${protocol}://${host}` : 'https://lead-rescue-ai-backend.onrender.com';
+  const baseUrl = process.env.BACKEND_URL || process.env.API_URL || detectedBase;
   return `${baseUrl.replace(/\/$/, '')}/api/v1/webhooks/lead-source/${sourceId}`;
 }
 
@@ -34,15 +35,16 @@ router.get('/', async (req, res) => {
       sources: sources.map(s => {
         let parsedConfig = {};
         try { parsedConfig = typeof s.configuration === 'string' ? JSON.parse(s.configuration) : (s.configuration || {}); } catch {}
-        const fullUrl = getFullWebhookUrl(req, s.id);
+        const isWebhook = s.type !== 'Manual';
+        const fullUrl = isWebhook ? getFullWebhookUrl(req, s.id) : null;
         const secret = parsedConfig.secret || parsedConfig.webhook_secret || '';
 
         return {
           ...s,
           configuration: {
+            ...parsedConfig,
             webhook_url: fullUrl,
-            webhook_secret: secret,
-            ...parsedConfig
+            webhook_secret: secret
           }
         };
       })
@@ -191,5 +193,93 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// POST /api/v1/lead-sources/:id/test
+// Ingests a simulated verified lead so the user can verify the webhook & AI qualification pipeline directly from the UI
+router.post('/:id/test', async (req, res) => {
+  try {
+    const session = await getCurrentUser(req);
+    if (!session) return res.status(401).json({ error: 'Unauthorized' });
+
+    const source = await get('SELECT * FROM lead_sources WHERE id = ? AND organization_id = ?', [req.params.id, session.organization_id]);
+    if (!source) return res.status(404).json({ error: 'Lead source not found.' });
+
+    const testLeadName = req.body?.name || `Verified Test Lead (${source.name})`;
+    const testEmail = req.body?.email || `test.lead.${Date.now().toString().slice(-4)}@example.com`;
+    const testPhone = req.body?.phone || '+1 (555) 234-5678';
+    const testCompany = req.body?.company || 'Enterprise Webhook Test Inc.';
+    const testDealValue = parseFloat(req.body?.deal_value || '3500');
+    const testProductInterest = req.body?.product_interest || `Inbound inquiry via ${source.name} webhook. Requesting demo and pricing for sales automation.`;
+
+    const initialStage = await get('SELECT id FROM crm_stages WHERE organization_id = ? AND is_initial = 1 LIMIT 1', [session.organization_id])
+      || await get('SELECT id FROM crm_stages WHERE organization_id = ? ORDER BY order_index ASC LIMIT 1', [session.organization_id]);
+
+    const { cryptoNativeOrRandomUUID } = require('../../lib/utils/uuid');
+    const { leadQueue } = require('../lib/queue/asyncQueue');
+    const leadId = cryptoNativeOrRandomUUID();
+
+    await run(
+      `INSERT INTO leads (id, organization_id, name, email, phone, company, product_interest, source_id, qualification_score, qualification_status, current_crm_stage_id, deal_value, notes, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'Pending', ?, ?, ?, NOW(), NOW())`,
+      [
+        leadId,
+        session.organization_id,
+        testLeadName,
+        testEmail,
+        testPhone,
+        testCompany,
+        testProductInterest,
+        source.id,
+        initialStage?.id || null,
+        testDealValue,
+        testProductInterest
+      ]
+    );
+
+    // Update telemetry
+    let currentConfig = {};
+    try { currentConfig = typeof source.configuration === 'string' ? JSON.parse(source.configuration) : (source.configuration || {}); } catch {}
+    const updatedConfig = {
+      ...currentConfig,
+      total_received: (currentConfig.total_received || 0) + 1,
+      last_received_at: new Date().toISOString(),
+      last_payload_preview: {
+        name: testLeadName,
+        email: testEmail,
+        phone: testPhone,
+        timestamp: new Date().toISOString()
+      }
+    };
+    await run('UPDATE lead_sources SET configuration = ?, updated_at = NOW() WHERE id = ?', [JSON.stringify(updatedConfig), source.id]);
+
+    const jobId = leadQueue.enqueue('QUALIFY_LEAD', {
+      leadId,
+      name: testLeadName,
+      email: testEmail,
+      phone: testPhone,
+      company: testCompany,
+      product_interest: testProductInterest,
+      source_name: source.name
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: `Test lead successfully created and queued for AI qualification for ${source.name}!`,
+      lead_id: leadId,
+      job_id: jobId,
+      lead: {
+        name: testLeadName,
+        email: testEmail,
+        phone: testPhone,
+        company: testCompany,
+        deal_value: testDealValue
+      }
+    });
+  } catch (err) {
+    console.error('[lead-sources POST :id/test]', err);
+    return res.status(500).json({ error: err.message || 'Internal server error' });
+  }
+});
+
 module.exports = router;
+
 
