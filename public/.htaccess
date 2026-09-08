@@ -6,6 +6,8 @@ DirectoryIndex index.html
   AddType text/css .css
   AddType image/svg+xml .svg
   AddType font/woff2 .woff2
+  AddType image/x-icon .ico
+  AddType image/png .png
 </IfModule>
 
 <IfModule mod_rewrite.c>
