@@ -64,7 +64,7 @@ function ResetPasswordForm() {
   };
 
   return (
-    <div className="glass-panel p-8 rounded-3xl shadow-2xl border border-slate-800">
+    <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-800">
       {success ? (
         <div className="text-center py-6 space-y-4">
           <CheckCircle className="w-12 h-12 text-emerald-400 mx-auto" />

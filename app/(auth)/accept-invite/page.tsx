@@ -61,7 +61,7 @@ function AcceptInviteForm() {
   };
 
   return (
-    <div className="glass-panel p-8 rounded-3xl shadow-2xl border border-slate-800">
+    <div className="glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-800">
       {error && (
         <div className="mb-5 p-4 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-sm flex items-center gap-3">
           <AlertCircle className="w-4 h-4 shrink-0" />

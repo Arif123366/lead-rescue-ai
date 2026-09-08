@@ -74,10 +74,10 @@ export default function LeadRescuePage() {
     <div className="min-h-screen bg-slate-950 flex flex-col selection:bg-cyan-500 selection:text-slate-950">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <Sidebar />
 
-        <main className="flex-1 p-4 lg:p-8 space-y-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
@@ -135,7 +135,7 @@ export default function LeadRescuePage() {
               atRiskLeads.map((item) => (
                 <div
                   key={item.lead_id}
-                  className="glass-panel p-6 rounded-3xl border border-cyan-500/40 rescue-glow space-y-4 hover:border-cyan-400 transition-colors shadow-[0_0_20px_rgba(0,240,255,0.12)]"
+                  className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-cyan-500/40 rescue-glow space-y-4 hover:border-cyan-400 transition-colors shadow-[0_0_20px_rgba(0,240,255,0.12)]"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="space-y-1">
@@ -152,7 +152,7 @@ export default function LeadRescuePage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-4 text-right">
+                    <div className="flex items-center gap-4 text-left sm:text-right flex-wrap">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-500 block">Idle Time</span>
                         <span className="text-sm font-extrabold text-purple-400 flex items-center gap-1">
@@ -162,7 +162,7 @@ export default function LeadRescuePage() {
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-500 block">Deal Value</span>
                         <span className="text-sm font-black font-mono text-emerald-400">
-                          ${item.deal_value ? item.deal_value.toLocaleString() : '0'}
+                          ${Number(item.deal_value || 0).toLocaleString()}
                         </span>
                       </div>
                     </div>

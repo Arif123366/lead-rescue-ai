@@ -24,10 +24,10 @@ export function BrandLogo({
   }[size];
 
   const content = (
-    <div className={`flex items-center gap-3 group select-none ${className}`}>
+    <div className={`flex items-center gap-2.5 sm:gap-3 group select-none ${className}`}>
       {/* Icon with Glowing Border */}
       <div
-        className={`${iconDimensions.box} rounded-xl rescue-gradient rescue-glow flex items-center justify-center p-1 group-hover:scale-105 transition-transform overflow-hidden relative border border-cyan-400/40`}
+        className={`${iconDimensions.box} flex-shrink-0 rounded-xl rescue-gradient rescue-glow flex items-center justify-center p-1 group-hover:scale-105 transition-transform overflow-hidden relative border border-cyan-400/40`}
       >
         <img
           src="/icon.png"
@@ -37,8 +37,8 @@ export function BrandLogo({
       </div>
 
       {/* Typography */}
-      <div>
-        <div className={`${iconDimensions.text} font-black tracking-tight leading-none flex items-center gap-1`}>
+      <div className="flex-shrink-0">
+        <div className={`${iconDimensions.text} font-black tracking-tight leading-none flex items-center gap-1 whitespace-nowrap`}>
           <span className="bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 bg-clip-text text-transparent">
             Lead
           </span>
@@ -47,7 +47,7 @@ export function BrandLogo({
           </span>
         </div>
         {showTagline && (
-          <div className={`${iconDimensions.sub} font-extrabold tracking-widest uppercase text-slate-400 flex items-center gap-1 mt-0.5`}>
+          <div className={`${iconDimensions.sub} font-extrabold tracking-widest uppercase text-slate-400 flex items-center gap-1 mt-0.5 whitespace-nowrap`}>
             <span>POWERED BY</span>
             <span className="bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent font-black">
               XILXIL

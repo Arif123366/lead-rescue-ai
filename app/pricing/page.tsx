@@ -8,36 +8,37 @@ import { BrandLogo } from '@/components/BrandLogo';
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <BrandLogo size="sm" showTagline={true} />
-          <div className="flex items-center gap-4 text-xs">
-            <Link href="/" className="text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors">
-              <ArrowLeft className="w-3.5 h-3.5" /> Back to Home
+      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md px-4 sm:px-6 py-3.5 sm:py-4 sticky top-0 z-30">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <BrandLogo size="sm" showTagline={false} className="sm:hidden" />
+          <BrandLogo size="sm" showTagline={true} className="hidden sm:flex" />
+          <div className="flex items-center gap-2.5 sm:gap-4 text-xs flex-shrink-0">
+            <Link href="/" className="text-slate-400 hover:text-cyan-400 flex items-center gap-1 transition-colors py-2 touch-target">
+              <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Back to </span>Home
             </Link>
-            <Link href="/signup" className="px-4 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black">
+            <Link href="/signup" className="px-3.5 sm:px-4 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-xs min-h-[38px] flex items-center shadow-md">
               Start Free Trial
             </Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-16 flex-1">
-        <div className="text-center max-w-3xl mx-auto mb-16">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex-1 w-full">
+        <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-xs font-bold mb-4 neon-cyan-glow">
             <Sparkles className="w-3.5 h-3.5" /> TRANSPARENT PRICING
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white mb-4">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-3 sm:mb-4 tracking-tight">
             Simple Plans for Teams of All Sizes
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
             Recover lost revenue with automated AI qualification and 48-hour lead rescue. Cancel anytime.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-16">
           {/* Starter */}
-          <div className="bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition-all rounded-2xl p-8 flex flex-col">
+          <div className="bg-slate-900/50 border border-slate-800 hover:border-cyan-500/30 transition-all rounded-2xl p-6 sm:p-8 flex flex-col">
             <h3 className="text-lg font-bold text-white mb-1">Starter</h3>
             <p className="text-xs text-slate-400 mb-6">For small teams getting started</p>
             <div className="text-4xl font-extrabold text-white mb-6">
@@ -56,7 +57,7 @@ export default function PricingPage() {
           </div>
 
           {/* Growth - Popular */}
-          <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-purple-950/30 border-2 border-cyan-400/80 rounded-2xl p-8 flex flex-col relative shadow-[0_0_30px_rgba(0,240,255,0.15)]">
+          <div className="bg-gradient-to-b from-slate-900 via-slate-900 to-purple-950/30 border-2 border-cyan-400/80 rounded-2xl p-6 sm:p-8 flex flex-col relative shadow-[0_0_30px_rgba(0,240,255,0.15)]">
             <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rescue-gradient text-slate-950 text-[10px] uppercase font-black px-3 py-1 rounded-full tracking-wider shadow-md">
               MOST POPULAR
             </div>
@@ -73,13 +74,13 @@ export default function PricingPage() {
               <li className="flex items-center gap-2"><Check className="w-4 h-4 text-cyan-400" /> 48-Hour Idle Lead Rescue Alerts</li>
               <li className="flex items-center gap-2"><Check className="w-4 h-4 text-cyan-400" /> HubSpot, Salesforce &amp; Zoho Sync</li>
             </ul>
-            <Link href="/signup" className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-center text-xs font-black text-slate-950 hover:opacity-95 transition-opacity">
+            <Link href="/signup" className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-center text-xs font-black text-slate-950 hover:opacity-95 transition-opacity min-h-[44px] flex items-center justify-center">
               Start Free Trial
             </Link>
           </div>
 
           {/* Enterprise */}
-          <div className="bg-slate-900/50 border border-slate-800 hover:border-purple-500/30 transition-all rounded-2xl p-8 flex flex-col">
+          <div className="bg-slate-900/50 border border-slate-800 hover:border-purple-500/30 transition-all rounded-2xl p-6 sm:p-8 flex flex-col">
             <h3 className="text-lg font-bold text-white mb-1">Enterprise</h3>
             <p className="text-xs text-slate-400 mb-6">For large enterprises &amp; agencies</p>
             <div className="text-4xl font-extrabold text-white mb-6">

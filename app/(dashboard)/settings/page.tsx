@@ -440,10 +440,10 @@ export default function SettingsPage() {
     <div className="min-h-screen bg-slate-950 flex flex-col">
       <Navbar />
 
-      <div className="flex flex-1">
+      <div className="flex flex-1 min-w-0">
         <Sidebar />
 
-        <main className="flex-1 p-4 lg:p-8 space-y-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 p-3 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
               Settings & Organization Control
@@ -454,14 +454,14 @@ export default function SettingsPage() {
           </div>
 
           {/* Navigation Tabs (Filtered by Role) */}
-          <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-semibold">
+          <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto text-xs font-semibold whitespace-nowrap scroll-smooth no-scrollbar">
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('team')}
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'team'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
                 Team Management ({team.length})
@@ -471,35 +471,35 @@ export default function SettingsPage() {
             {(userRole === 'Organization Owner' || userRole === 'Marketing Manager') && (
               <button
                 onClick={() => setActiveTab('sources')}
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'sources'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                Lead Sources & Webhooks ({sources.length})
+                Lead Sources &amp; Webhooks ({sources.length})
               </button>
             )}
 
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('billing')}
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'billing'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                Subscription & Usage Limits
+                Subscription &amp; Usage Limits
               </button>
             )}
 
             <button
               onClick={() => setActiveTab('rag')}
-              className={`px-4 py-2 rounded-xl transition-all ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                 activeTab === 'rag'
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                  : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                  ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                  : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
               }`}
             >
               RAG Knowledge Base ({ragDocs.length})
@@ -508,10 +508,10 @@ export default function SettingsPage() {
             {(userRole === 'Organization Owner' || userRole === 'Marketing Manager') && (
               <button
                 onClick={() => setActiveTab('crm_sync')}
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'crm_sync'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
                 External CRM Connectors ({crmConnectors.length})
@@ -521,10 +521,10 @@ export default function SettingsPage() {
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('org')}
-                className={`px-4 py-2 rounded-xl transition-all ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'org'
-                    ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                    : 'text-slate-400 hover:bg-slate-900 hover:text-white'
+                    ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
+                    : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
                 Organization Details
@@ -535,12 +535,12 @@ export default function SettingsPage() {
           {/* TAB 1: TEAM MANAGEMENT */}
           {activeTab === 'team' && (
             <div className="space-y-6">
-              <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                   <div>
-                    <h2 className="text-sm font-bold text-white">Team Members & Access Control</h2>
-                    <p className="text-[11px] text-slate-400 font-medium">
-                      Plan User Usage: <strong className="text-rose-400">{currentPlan.current_user_count} / {currentPlan.user_limit}</strong> seats filled
+                    <h2 className="text-sm sm:text-base font-bold text-white">Team Members &amp; Access Control</h2>
+                    <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+                      Plan User Usage: <strong className="text-cyan-400 font-bold">{currentPlan.current_user_count} / {currentPlan.user_limit}</strong> seats filled
                     </p>
                   </div>
 
@@ -550,7 +550,7 @@ export default function SettingsPage() {
                       setInviteError('');
                       setShowInviteModal(true);
                     }}
-                    className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-white text-xs font-semibold flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                   >
                     <UserPlus className="w-4 h-4" /> Invite Member
                   </button>
@@ -616,18 +616,18 @@ export default function SettingsPage() {
 
           {/* TAB 2: LEAD SOURCES & WEBHOOKS */}
           {activeTab === 'sources' && (
-            <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
-                  <h2 className="text-sm font-bold text-white">Lead Capture Sources & Webhook Endpoints</h2>
-                  <p className="text-[11px] text-slate-400">
-                    Incoming leads sent to these webhook URLs trigger automatic AI qualification & CRM insertion.
+                  <h2 className="text-sm sm:text-base font-bold text-white">Lead Capture Sources &amp; Webhook Endpoints</h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Incoming leads sent to these webhook URLs trigger automatic AI qualification &amp; CRM insertion.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setShowSourceModal(true)}
-                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-white text-xs font-semibold flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                 >
                   <Plus className="w-4 h-4" /> Add Lead Source
                 </button>
@@ -640,7 +640,7 @@ export default function SettingsPage() {
                     <div key={src.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Globe className="w-4 h-4 text-rose-400" />
+                          <Globe className="w-4 h-4 text-cyan-400" />
                           <h3 className="font-bold text-white text-sm">{src.name}</h3>
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300 font-mono border border-slate-700">
                             {src.type}
@@ -654,7 +654,7 @@ export default function SettingsPage() {
                         </div>
                         <button
                           onClick={() => copyWebhook(webhookUrl, src.id)}
-                          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white font-semibold flex items-center justify-center gap-1.5 shrink-0 transition-colors"
+                          className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-white font-semibold flex items-center justify-center gap-1.5 shrink-0 transition-colors min-h-[38px]"
                         >
                           {copiedWebhookId === src.id ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-slate-400" />}
                           {copiedWebhookId === src.id ? 'Copied!' : 'Copy Webhook URL'}
@@ -672,11 +672,11 @@ export default function SettingsPage() {
             <div className="space-y-6">
               {/* Usage Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-3">
+                <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Monthly Lead Limit Usage</span>
                   <div className="flex items-center justify-between text-white font-extrabold text-lg">
                     <span>{currentPlan.current_lead_count} / {currentPlan.lead_limit} Leads</span>
-                    <span className="text-xs font-mono text-rose-400">
+                    <span className="text-xs font-mono text-cyan-400">
                       {Math.round((currentPlan.current_lead_count / currentPlan.lead_limit) * 100)}%
                     </span>
                   </div>
@@ -688,17 +688,17 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-3">
+                <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-3">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Team Seats Usage</span>
                   <div className="flex items-center justify-between text-white font-extrabold text-lg">
                     <span>{currentPlan.current_user_count} / {currentPlan.user_limit} Seats</span>
-                    <span className="text-xs font-mono text-indigo-400">
+                    <span className="text-xs font-mono text-purple-400">
                       {Math.round((currentPlan.current_user_count / currentPlan.user_limit) * 100)}%
                     </span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-900 overflow-hidden">
                     <div
-                      className="h-full bg-indigo-500"
+                      className="h-full bg-purple-500"
                       style={{ width: `${Math.min(100, (currentPlan.current_user_count / currentPlan.user_limit) * 100)}%` }}
                     />
                   </div>
@@ -713,15 +713,15 @@ export default function SettingsPage() {
                   return (
                     <div
                       key={plan.id}
-                      className={`glass-panel p-6 rounded-3xl border space-y-4 flex flex-col justify-between ${
-                        isCurrent ? 'border-rose-500/50 rescue-glow' : 'border-slate-800'
+                      className={`glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border space-y-4 flex flex-col justify-between ${
+                        isCurrent ? 'border-cyan-400/80 rescue-glow shadow-[0_0_25px_rgba(0,240,255,0.15)]' : 'border-slate-800'
                       }`}
                     >
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <h3 className="font-extrabold text-base text-white">{plan.name}</h3>
                           {isCurrent && (
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
                               Current Plan
                             </span>
                           )}
@@ -736,7 +736,7 @@ export default function SettingsPage() {
                         <div className="space-y-1.5 pt-2 text-xs text-slate-300">
                           {plan.features.map((f: string) => (
                             <div key={f} className="flex items-center gap-2">
-                              <CheckCircle2 className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                               <span>{f}</span>
                             </div>
                           ))}
@@ -746,10 +746,10 @@ export default function SettingsPage() {
                       <button
                         onClick={() => handleUpgradePlan(plan)}
                         disabled={isCurrent}
-                        className={`w-full py-2.5 rounded-xl text-xs font-semibold transition-all mt-4 ${
+                        className={`w-full py-2.5 rounded-xl text-xs font-black transition-all mt-4 min-h-[40px] flex items-center justify-center ${
                           isCurrent
                             ? 'bg-slate-900 text-slate-500 cursor-default border border-slate-800'
-                            : 'rescue-gradient rescue-glow text-white hover:opacity-95'
+                            : 'rescue-gradient rescue-glow text-slate-950 hover:opacity-95'
                         }`}
                       >
                         {isCurrent ? 'Current Plan' : 'Select Plan'}
@@ -782,7 +782,7 @@ export default function SettingsPage() {
                     onClick={() => setSelectedProvider('stripe')}
                     className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
                       selectedProvider === 'stripe'
-                        ? 'bg-rose-950/30 border-rose-500 text-white rescue-glow'
+                        ? 'bg-cyan-950/30 border-cyan-500 text-white rescue-glow'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                     }`}
                   >
@@ -793,14 +793,14 @@ export default function SettingsPage() {
                         <div className="text-[11px] text-slate-400">Credit / Debit Card, Apple Pay, Google Pay</div>
                       </div>
                     </div>
-                    {selectedProvider === 'stripe' && <Check className="w-5 h-5 text-rose-400" />}
+                    {selectedProvider === 'stripe' && <Check className="w-5 h-5 text-cyan-400" />}
                   </div>
 
                   <div
                     onClick={() => setSelectedProvider('payoneer')}
                     className={`p-4 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
                       selectedProvider === 'payoneer'
-                        ? 'bg-rose-950/30 border-rose-500 text-white rescue-glow'
+                        ? 'bg-cyan-950/30 border-cyan-500 text-white rescue-glow'
                         : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
                     }`}
                   >
@@ -811,14 +811,14 @@ export default function SettingsPage() {
                         <div className="text-[11px] text-slate-400">Payoneer Account Balance, Bank Transfer, Invoice</div>
                       </div>
                     </div>
-                    {selectedProvider === 'payoneer' && <Check className="w-5 h-5 text-rose-400" />}
+                    {selectedProvider === 'payoneer' && <Check className="w-5 h-5 text-cyan-400" />}
                   </div>
                 </div>
 
                 <button
                   onClick={handleExecuteCheckout}
                   disabled={processingPayment}
-                  className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-white text-xs font-extrabold tracking-wide uppercase disabled:opacity-50"
+                  className="w-full py-3 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black tracking-wide uppercase disabled:opacity-50 min-h-[44px]"
                 >
                   {processingPayment ? 'Connecting Gateway...' : `Proceed to ${selectedProvider.toUpperCase()} Payment`}
                 </button>
@@ -828,18 +828,18 @@ export default function SettingsPage() {
 
           {/* TAB: RAG COMPANY KNOWLEDGE BASE */}
           {activeTab === 'rag' && (
-            <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
-                  <h2 className="text-sm font-bold text-white">RAG Company Knowledge Base</h2>
-                  <p className="text-[11px] text-slate-400">
+                  <h2 className="text-sm sm:text-base font-bold text-white">RAG Company Knowledge Base</h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
                     Upload product FAQs, pricing guides, or company specifications. OpenRouter AI retrieves this context during qualification and follow-up generation.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setShowRagModal(true)}
-                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-white text-xs font-semibold flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                 >
                   <Plus className="w-4 h-4" /> Add Knowledge Document
                 </button>
@@ -855,9 +855,9 @@ export default function SettingsPage() {
                     <div key={doc.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2 text-xs">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-rose-400" />
+                          <Zap className="w-4 h-4 text-cyan-400" />
                           <h3 className="font-bold text-white text-sm">{doc.title}</h3>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-rose-300 font-mono border border-slate-700">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-cyan-300 font-mono border border-slate-700">
                             {doc.category}
                           </span>
                         </div>
@@ -869,7 +869,7 @@ export default function SettingsPage() {
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
-                      <p className="text-slate-300 text-xs line-clamp-3 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono">
+                      <p className="text-slate-300 text-xs line-clamp-3 bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono break-all">
                         {doc.content_chunk}
                       </p>
                     </div>
@@ -881,18 +881,18 @@ export default function SettingsPage() {
 
           {/* TAB: EXTERNAL CRM CONNECTORS */}
           {activeTab === 'crm_sync' && (
-            <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div>
-                  <h2 className="text-sm font-bold text-white">External CRM Data Connectors (HubSpot, Salesforce, Zoho, Pipedrive, GoHighLevel)</h2>
-                  <p className="text-[11px] text-slate-400">
-                    Extract customer leads automatically from third-party CRMs and sync pipeline stages in real time.
+                  <h2 className="text-sm sm:text-base font-bold text-white">External CRM Data Connectors</h2>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Extract customer leads automatically from HubSpot, Salesforce, Zoho, Pipedrive, or GoHighLevel and sync pipeline stages in real time.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setShowCrmModal(true)}
-                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-white text-xs font-semibold flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                 >
                   <Plus className="w-4 h-4" /> Connect External CRM
                 </button>
@@ -906,9 +906,9 @@ export default function SettingsPage() {
                 ) : (
                   crmConnectors.map((connector) => (
                     <div key={connector.id} className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 text-xs">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                          <Building className="w-4 h-4 text-rose-400" />
+                          <Building className="w-4 h-4 text-cyan-400" />
                           <h3 className="font-bold text-white text-sm">{connector.name} ({connector.provider})</h3>
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">
                             {connector.status}
@@ -918,13 +918,13 @@ export default function SettingsPage() {
                         <button
                           onClick={() => handleSyncCrm(connector.id)}
                           disabled={syncingCrmId === connector.id}
-                          className="px-3 py-1.5 rounded-xl rescue-gradient text-white font-semibold text-xs disabled:opacity-50"
+                          className="px-3.5 py-2 rounded-xl rescue-gradient text-slate-950 font-black text-xs disabled:opacity-50 min-h-[38px] self-start sm:self-auto"
                         >
                           {syncingCrmId === connector.id ? 'Extracting Data...' : 'Sync & Extract Now'}
                         </button>
                       </div>
 
-                      <div className="text-[11px] text-slate-400 font-mono flex items-center justify-between pt-1 border-t border-slate-800">
+                      <div className="text-[11px] text-slate-400 font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-1 pt-1 border-t border-slate-800">
                         <span>Auto-Sync Frequency: Every {connector.sync_frequency_hours || 24} Hours</span>
                         <span>Last Synced: {connector.last_synced_at || 'Never'}</span>
                       </div>
@@ -937,8 +937,8 @@ export default function SettingsPage() {
 
           {/* TAB 4: ORG DETAILS */}
           {activeTab === 'org' && (
-            <div className="glass-panel p-6 rounded-3xl border border-slate-800 max-w-md space-y-4">
-              <h2 className="text-sm font-bold text-white">Organization Profile</h2>
+            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 max-w-md space-y-4">
+              <h2 className="text-sm sm:text-base font-bold text-white">Organization Profile</h2>
 
               <form onSubmit={handleSaveOrg} className="space-y-3 text-xs">
                 <div>
@@ -948,13 +948,13 @@ export default function SettingsPage() {
                     required
                     value={orgName}
                     onChange={(e) => setOrgName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-rose-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 min-h-[44px]"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="py-2 px-4 rounded-xl rescue-gradient text-white font-semibold text-xs mt-2"
+                  className="py-2.5 px-4 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-xs mt-2 min-h-[44px] flex items-center justify-center"
                 >
                   Save Changes
                 </button>

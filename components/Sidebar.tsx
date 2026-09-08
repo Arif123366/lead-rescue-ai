@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api-client';
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard', roles: ['Organization Owner', 'Marketing Manager', 'Sales Representative'] },
   { label: 'Leads Management', icon: Users, href: '/leads', roles: ['Organization Owner', 'Marketing Manager', 'Sales Representative'] },
   { label: 'Smart CRM Pipeline', icon: Kanban, href: '/crm', roles: ['Organization Owner', 'Marketing Manager', 'Sales Representative'] },
@@ -28,6 +28,17 @@ const NAV_ITEMS = [
   { label: 'Reports & Analytics', icon: BarChart3, href: '/reports', roles: ['Organization Owner', 'Marketing Manager', 'Sales Representative'] },
   { label: 'Settings & Integrations', icon: Settings, href: '/settings', roles: ['Organization Owner', 'Marketing Manager'] },
 ];
+
+export function getRoleBadge(userRole: string) {
+  switch (userRole) {
+    case 'Marketing Manager':
+      return { label: 'Marketing Manager', icon: Briefcase, color: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/40' };
+    case 'Sales Representative':
+      return { label: 'Sales Representative', icon: UserCheck, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40' };
+    default:
+      return { label: 'Organization Owner', icon: ShieldCheck, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/40' };
+  }
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -43,19 +54,7 @@ export function Sidebar() {
   }, []);
 
   const filteredNavItems = NAV_ITEMS.filter((item) => item.roles.includes(userRole));
-
-  const getRoleBadge = () => {
-    switch (userRole) {
-      case 'Marketing Manager':
-        return { label: 'Marketing Manager', icon: Briefcase, color: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/40' };
-      case 'Sales Representative':
-        return { label: 'Sales Representative', icon: UserCheck, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40' };
-      default:
-        return { label: 'Organization Owner', icon: ShieldCheck, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/40' };
-    }
-  };
-
-  const badge = getRoleBadge();
+  const badge = getRoleBadge(userRole);
   const BadgeIcon = badge.icon;
 
   return (
