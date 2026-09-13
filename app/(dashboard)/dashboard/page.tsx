@@ -17,6 +17,7 @@ import {
   ArrowRight,
   Plus,
   Upload,
+  Download,
   RefreshCw,
   Clock,
   Send,
@@ -118,9 +119,15 @@ export default function DashboardPage() {
               </Link>
               <Link
                 href="/leads?action=import"
-                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-800 transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-200 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-800 transition-all"
               >
-                <Upload className="w-4 h-4 text-slate-400" /> Import CSV
+                <Upload className="w-4 h-4 text-cyan-400" /> Import (.xlsx, .pdf, .csv)
+              </Link>
+              <Link
+                href="/leads?action=export"
+                className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-emerald-300 text-xs font-semibold flex items-center gap-1.5 hover:bg-slate-800 transition-all"
+              >
+                <Download className="w-4 h-4 text-emerald-400" /> Export Data
               </Link>
               <button
                 onClick={fetchDashboardData}
