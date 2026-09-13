@@ -2,23 +2,34 @@
 DirectoryIndex index.html
 
 <IfModule mod_mime.c>
-  AddType application/javascript .js
+  AddType application/javascript .js .mjs
   AddType text/css .css
   AddType image/svg+xml .svg
   AddType font/woff2 .woff2
   AddType image/x-icon .ico
   AddType image/png .png
+  AddType application/json .json
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set Access-Control-Allow-Origin "*"
+  <FilesMatch "\.(css|js|woff2|png|jpg|jpeg|svg|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
 </IfModule>
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
 
+  # Disable MultiViews & enable FollowSymLinks for Hostinger
+  Options -MultiViews +FollowSymLinks
+
   # Force HTTPS
   RewriteCond %{HTTPS} off
   RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # Never rewrite static assets (_next, css, js, images, fonts)
+  # Never rewrite Next.js static assets (_next, css, js, images, fonts)
   RewriteCond %{REQUEST_URI} ^/_next/ [OR]
   RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|json|woff|woff2|ttf|eot)$ [NC]
   RewriteRule ^ - [L]
