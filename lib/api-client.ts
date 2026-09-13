@@ -12,41 +12,21 @@ const API_BASE =
 
 /**
  * Thin wrapper around fetch that prepends the configured API base URL.
- * Automatically forwards browser cookies (credentials: 'include') and
- * Bearer authorization token if stored in localStorage.
+ * Automatically forwards browser cookies (credentials: 'include').
  */
 export async function apiFetch(
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
   const url = `${API_BASE}${path}`;
-  const token = typeof window !== 'undefined' ? localStorage.getItem('lead_rescue_token') : null;
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string> || {}),
-  };
-
-  if (token && !headers['Authorization'] && !headers['authorization']) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(url, {
+  return fetch(url, {
     credentials: 'include',
     ...options,
-    headers,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
   });
-
-  if (res.status === 401 && typeof window !== 'undefined') {
-    const isAuthPath = ['/login', '/signup', '/forgot-password', '/reset-password', '/accept-invite'].some(p =>
-      window.location.pathname.startsWith(p)
-    );
-    if (!isAuthPath) {
-      localStorage.removeItem('lead_rescue_token');
-    }
-  }
-
-  return res;
 }
 
 /**

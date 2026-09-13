@@ -38,10 +38,6 @@ export default function SignupPage() {
         throw new Error(data.error || 'Failed to create organization account.');
       }
 
-      if (data.token && typeof window !== 'undefined') {
-        localStorage.setItem('lead_rescue_token', data.token);
-      }
-
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);

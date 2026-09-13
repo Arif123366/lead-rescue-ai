@@ -572,76 +572,76 @@ export default function SettingsPage() {
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('team')}
-                className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'team'
                     ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                <span>Team Management ({team.length})</span>
+                Team Management ({team.length})
               </button>
             )}
 
             {(userRole === 'Organization Owner' || userRole === 'Marketing Manager') && (
               <button
                 onClick={() => setActiveTab('sources')}
-                className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'sources'
                     ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                <span>Lead Sources &amp; Webhooks ({sources.length})</span>
+                Lead Sources &amp; Webhooks ({sources.length})
               </button>
             )}
 
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('billing')}
-                className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'billing'
                     ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                <span>Subscription &amp; Usage Limits</span>
+                Subscription &amp; Usage Limits
               </button>
             )}
 
             <button
               onClick={() => setActiveTab('rag')}
-              className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                 activeTab === 'rag'
                   ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                   : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
               }`}
             >
-              <span>RAG Knowledge Base ({ragDocs.length})</span>
+              RAG Knowledge Base ({ragDocs.length})
             </button>
 
             {(userRole === 'Organization Owner' || userRole === 'Marketing Manager') && (
               <button
                 onClick={() => setActiveTab('crm_sync')}
-                className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'crm_sync'
                     ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                <span>External CRM Connectors ({crmConnectors.length})</span>
+                External CRM Connectors ({crmConnectors.length})
               </button>
             )}
 
             {userRole === 'Organization Owner' && (
               <button
                 onClick={() => setActiveTab('org')}
-                className={`px-4 py-2.5 rounded-xl transition-all flex-shrink-0 whitespace-nowrap min-w-max touch-target inline-flex items-center justify-center gap-1.5 ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl transition-all flex-shrink-0 touch-target flex items-center justify-center ${
                   activeTab === 'org'
                     ? 'rescue-gradient text-slate-950 font-black rescue-glow shadow-[0_0_12px_rgba(0,240,255,0.2)]'
                     : 'text-slate-400 hover:bg-slate-900 hover:text-white border border-transparent'
                 }`}
               >
-                <span>Organization Details</span>
+                Organization Details
               </button>
             )}
           </div>
@@ -1114,10 +1114,9 @@ export default function SettingsPage() {
 
                 <button
                   onClick={() => setShowRagModal(true)}
-                  className="px-4 py-2.5 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black inline-flex items-center justify-center gap-2 min-h-[40px] whitespace-nowrap flex-shrink-0 min-w-max self-start sm:self-auto shadow-md hover:opacity-95 transition-opacity"
+                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                 >
-                  <Plus className="w-4 h-4 flex-shrink-0" />
-                  <span>Add Knowledge Document</span>
+                  <Plus className="w-4 h-4" /> Add Knowledge Document
                 </button>
               </div>
 
@@ -1168,10 +1167,9 @@ export default function SettingsPage() {
 
                 <button
                   onClick={() => setShowCrmModal(true)}
-                  className="px-4 py-2.5 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black inline-flex items-center justify-center gap-2 min-h-[40px] whitespace-nowrap flex-shrink-0 min-w-max self-start sm:self-auto shadow-md hover:opacity-95 transition-opacity"
+                  className="px-3.5 py-2 rounded-xl rescue-gradient rescue-glow text-slate-950 text-xs font-black flex items-center justify-center gap-1.5 min-h-[40px] self-start sm:self-auto shadow-md"
                 >
-                  <Plus className="w-4 h-4 flex-shrink-0" />
-                  <span>Connect External CRM</span>
+                  <Plus className="w-4 h-4" /> Connect External CRM
                 </button>
               </div>
 
