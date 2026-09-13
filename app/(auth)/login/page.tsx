@@ -30,7 +30,13 @@ export default function LoginPage() {
         throw new Error(data.error || 'Invalid email or password.');
       }
 
-      router.push('/dashboard');
+      if (data.token && typeof window !== 'undefined') {
+        localStorage.setItem('lead_rescue_token', data.token);
+      }
+
+      const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+      const redirectUrl = params?.get('redirect') || '/dashboard';
+      router.push(redirectUrl);
     } catch (err: any) {
       setError(err.message);
     } finally {
