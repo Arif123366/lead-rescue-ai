@@ -20,7 +20,7 @@ function getJwtSecret(): string {
       console.warn('[auth] WARNING: JWT_SECRET not set. Generating dynamic temporary session secret for development.');
       devFallbackSecret = require('crypto').randomBytes(32).toString('hex');
     }
-    return devFallbackSecret;
+    return devFallbackSecret as string;
   }
   return secret;
 }

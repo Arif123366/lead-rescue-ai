@@ -92,6 +92,32 @@ export default function SettingsPage() {
   const [orgName, setOrgName] = useState('');
   const [copiedWebhookId, setCopiedWebhookId] = useState<string | null>(null);
 
+  // Danger Zone / Account Deletion States
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return;
+    setDeletingAccount(true);
+    try {
+      const res = await apiFetch('/api/v1/auth/delete-account', {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        localStorage.removeItem('auth_token');
+        window.location.href = '/login?deleted=true';
+      } else {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Failed to delete account');
+        setDeletingAccount(false);
+      }
+    } catch {
+      alert('Network error occurred during account deletion.');
+      setDeletingAccount(false);
+    }
+  };
+
   const fetchSettingsData = async () => {
     try {
       // 1. Fetch user session first to set role and unblock UI loading state fast
@@ -1212,28 +1238,52 @@ export default function SettingsPage() {
 
           {/* TAB 4: ORG DETAILS */}
           {activeTab === 'org' && (
-            <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 max-w-md space-y-4">
-              <h2 className="text-sm sm:text-base font-bold text-white">Organization Profile</h2>
+            <div className="space-y-6 max-w-xl">
+              <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-slate-800 space-y-4">
+                <h2 className="text-sm sm:text-base font-bold text-white">Organization Profile</h2>
 
-              <form onSubmit={handleSaveOrg} className="space-y-3 text-xs">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">Organization Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={orgName}
-                    onChange={(e) => setOrgName(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 min-h-[44px]"
-                  />
+                <form onSubmit={handleSaveOrg} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">Organization Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-cyan-400 min-h-[44px]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="py-2.5 px-4 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-xs mt-2 min-h-[44px] flex items-center justify-center"
+                  >
+                    Save Changes
+                  </button>
+                </form>
+              </div>
+
+              {/* DANGER ZONE: DATA & ACCOUNT DELETION */}
+              <div className="glass-panel p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-rose-900/40 bg-rose-950/10 space-y-3">
+                <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <h3>Danger Zone — Privacy &amp; Data Deletion</h3>
                 </div>
-
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Permanently delete your account and remove all associated personal data. {userRole === 'Organization Owner' ? 'As an Organization Owner, this will permanently cascade and delete all leads, follow-up messages, qualification results, appointments, RAG documents, and organization records.' : 'This will remove your user account, unassign you from team leads, and clear your notification records.'}
+                </p>
                 <button
-                  type="submit"
-                  className="py-2.5 px-4 rounded-xl rescue-gradient rescue-glow text-slate-950 font-black text-xs mt-2 min-h-[44px] flex items-center justify-center"
+                  type="button"
+                  onClick={() => {
+                    setDeleteConfirmText('');
+                    setShowDeleteModal(true);
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold transition-colors flex items-center gap-2"
                 >
-                  Save Changes
+                  <Trash2 className="w-4 h-4" />
+                  Delete Account &amp; All Personal Data
                 </button>
-              </form>
+              </div>
             </div>
           )}
         </main>
@@ -1880,6 +1930,64 @@ export default function SettingsPage() {
                 Provision Webhook Endpoint
               </button>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE ACCOUNT CONFIRMATION MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 glass-panel bg-black/75 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-rose-900/50 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2 text-rose-400 font-bold text-base">
+                <AlertCircle className="w-5 h-5" />
+                <span>Confirm Account Deletion</span>
+              </div>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deletingAccount}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              This action is <strong className="text-rose-400">permanent and irreversible</strong>. All personal data, credentials, and associated organizational records will be completely removed in compliance with data privacy regulations.
+            </p>
+
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-semibold text-slate-400">
+                To confirm, type <span className="font-mono text-white font-bold bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">DELETE</span> below:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="DELETE"
+                disabled={deletingAccount}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-rose-900/50 text-white font-mono text-xs focus:outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deletingAccount}
+                className="w-1/2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors min-h-[42px]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'DELETE' || deletingAccount}
+                className="w-1/2 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 min-h-[42px]"
+              >
+                {deletingAccount ? 'Deleting...' : 'Confirm Delete'}
+              </button>
+            </div>
           </div>
         </div>
       )}

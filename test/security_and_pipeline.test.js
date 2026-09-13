@@ -309,6 +309,56 @@ async function runAsyncTest(name, testFn) {
     assert.ok(content.includes('Suspense'), 'Dashboard layout must include Suspense');
   });
 
+  // ─── 7. Personal Data, Privacy & Account Deletion ─────────────────────────
+  console.log('\n--- 7. Personal Data, Privacy & Account Deletion ---');
+
+  runTest('25. Mailer redacts recipient emails and sanitizes action URL tokens in logs', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../lib/email/mailer.ts'), 'utf8');
+    assert.ok(content.includes('redactEmail'), 'mailer.ts must have redactEmail function');
+    assert.ok(content.includes('sanitizeUrlForLogs'), 'mailer.ts must sanitize URL tokens before logging');
+    assert.ok(!content.includes("console.log(`  To:      ${payload.to}`)"), 'mailer.ts must not log raw email');
+  });
+
+  runTest('26. WASender integration masks phone numbers and redacts message body in logs', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../lib/integrations/wasender.ts'), 'utf8');
+    assert.ok(content.includes('maskPhone'), 'wasender.ts must define maskPhone helper');
+    assert.ok(content.includes('Message: [REDACTED]'), 'wasender.ts must redact message content in logs');
+    assert.ok(!content.includes("console.log(`  To:      ${payload.to} (${cleanPhone})`)"), 'wasender.ts must not log raw phone');
+  });
+
+  runTest('27. Twilio WhatsApp integration masks phone numbers and redacts message body', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../lib/twilio/whatsapp.ts'), 'utf8');
+    assert.ok(content.includes('maskPhone'), 'whatsapp.ts must define maskPhone helper');
+    assert.ok(content.includes('Message: [REDACTED]'), 'whatsapp.ts must redact message body in simulated logs');
+  });
+
+  runTest('28. AI qualification strips raw email addresses from OpenRouter AI prompt payload', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../lib/ai/qualification.ts'), 'utf8');
+    assert.ok(content.includes('emailDomain'), 'qualification.ts must sanitize email to domain or status');
+    assert.ok(!content.includes("`Email: ${input.email || 'N/A'}`"), 'qualification.ts must not pass raw user email to AI');
+  });
+
+  runTest('29. Auth routes implement DELETE /delete-account with role-aware cascade deletion', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../server/routes/auth.js'), 'utf8');
+    assert.ok(content.includes("router.delete('/delete-account'"), 'auth.js must have DELETE /delete-account route');
+    assert.ok(content.includes('clearExpressSessionCookie'), 'delete-account must clear session cookie');
+    assert.ok(content.includes('DELETE FROM organizations WHERE id = ?'), 'delete-account must cascade delete organization for owners');
+    assert.ok(content.includes('UPDATE leads SET assigned_to_user_id = NULL'), 'delete-account must unassign team members cleanly');
+  });
+
+  runTest('30. Auth routes enforce field-level filtering on GET /me without leaking internal org fields', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../server/routes/auth.js'), 'utf8');
+    assert.ok(content.includes('SELECT o.id, o.name, o.current_lead_count'), 'auth.js must explicitly whitelist organization fields');
+    assert.ok(!content.includes('SELECT o.*, sp.name as plan_name'), 'auth.js must not select o.*');
+  });
+
+  runTest('31. Settings UI includes Danger Zone for personal data & account deletion with confirmation', () => {
+    const content = fs.readFileSync(path.join(__dirname, '../app/(dashboard)/settings/page.tsx'), 'utf8');
+    assert.ok(content.includes('Danger Zone — Privacy &amp; Data Deletion') || content.includes('Danger Zone'), 'settings page must render Danger Zone');
+    assert.ok(content.includes('/api/v1/auth/delete-account'), 'settings page must call delete-account API');
+    assert.ok(content.includes('showDeleteModal'), 'settings page must have delete confirmation modal');
+  });
+
   console.log(`\n==================================================`);
   console.log(`  Test Results: ${passedTests}/${totalTests} Passed (${Math.round((passedTests / totalTests) * 100)}%)`);
   console.log(`==================================================\n`);

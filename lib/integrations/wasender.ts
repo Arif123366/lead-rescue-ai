@@ -15,6 +15,11 @@ export interface WhatsAppMessagePayload {
   message: string;
 }
 
+function maskPhone(phone: string): string {
+  if (!phone || phone.length < 5) return '[REDACTED]';
+  return `${phone.slice(0, 3)}***${phone.slice(-2)}`;
+}
+
 export async function sendWhatsAppMessage(payload: WhatsAppMessagePayload): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const cleanPhone = payload.to.replace(/[^0-9]/g, '');
 
@@ -35,7 +40,7 @@ export async function sendWhatsAppMessage(payload: WhatsAppMessagePayload): Prom
 
       if (!res.ok) {
         const errText = await res.text();
-        console.warn('[wasender] WASender API response warning:', errText);
+        console.warn('[wasender] WASender API response warning:', errText ? '[REDACTED_ERROR]' : 'Unknown error');
         return { success: false, error: errText };
       }
 
@@ -44,16 +49,16 @@ export async function sendWhatsAppMessage(payload: WhatsAppMessagePayload): Prom
       return { success: true, messageId: data.id || data.message_id };
     } catch (err: any) {
       console.log('[wasender] Network/API endpoint fallback active. Dispatch logged below:');
-      console.log(`  To:      ${payload.to} (${cleanPhone})`);
-      console.log(`  Message: ${payload.message}`);
+      console.log(`  To:      ${maskPhone(cleanPhone)}`);
+      console.log(`  Message: [REDACTED] (${payload.message?.length || 0} chars)`);
       return { success: true, messageId: `wasender-fallback-${Date.now()}` };
     }
   } else {
     // Development fallback
     console.log('\n────────────────────────────────────────────────────────────');
     console.log('[wasender] DEV MODE — WhatsApp Message Dispatch (API Key Not Configured)');
-    console.log(`  To:      ${payload.to} (${cleanPhone})`);
-    console.log(`  Message: ${payload.message}`);
+    console.log(`  To:      ${maskPhone(cleanPhone)}`);
+    console.log(`  Message: [REDACTED] (${payload.message?.length || 0} chars)`);
     console.log('────────────────────────────────────────────────────────────\n');
     return { success: true, messageId: `dev-wasender-${Date.now()}` };
   }

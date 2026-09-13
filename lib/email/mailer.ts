@@ -15,6 +15,16 @@ interface EmailPayload {
   html: string;
 }
 
+function redactEmail(email: string): string {
+  if (!email || !email.includes('@')) return '[REDACTED]';
+  const [user, domain] = email.split('@');
+  return `${user.slice(0, 1)}***@${domain}`;
+}
+
+function sanitizeUrlForLogs(url: string): string {
+  return url.replace(/token=[a-zA-Z0-9_-]+/gi, 'token=[REDACTED]');
+}
+
 async function sendEmail(payload: EmailPayload): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.EMAIL_FROM || 'Lead Rescue AI <notifications@leadrescue.ai>';
@@ -36,14 +46,14 @@ async function sendEmail(payload: EmailPayload): Promise<void> {
 
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      console.warn('[mailer] Resend warning/error:', err);
+      console.warn('[mailer] Resend warning/error:', (err as any)?.message || res.statusText);
 
       // If sandbox restriction (can only send to verified email in free tier)
       if (res.status === 403 || (err as any)?.statusCode === 403) {
         console.log('[mailer] Resend Sandbox Restriction — Invitation link generated cleanly for direct sharing.');
         const urlMatch = payload.html.match(/href="([^"]+)"/);
         if (urlMatch) {
-          console.log('[mailer] ACTION URL:', urlMatch[1]);
+          console.log('[mailer] ACTION URL:', sanitizeUrlForLogs(urlMatch[1]));
         }
         return;
       }
@@ -54,17 +64,17 @@ async function sendEmail(payload: EmailPayload): Promise<void> {
     const data = await res.json();
     console.log('[mailer] Email sent via Resend:', data.id);
   } else {
-    // Development mode — print to console
+    // Development mode — print to console with sanitized personal data
     console.log('\n─────────────────────────────────────────');
     console.log('[mailer] DEV MODE — Email not sent (RESEND_API_KEY not configured)');
     console.log(`  From:    ${fromEmail}`);
-    console.log(`  To:      ${payload.to}`);
+    console.log(`  To:      ${redactEmail(payload.to)}`);
     console.log(`  Subject: ${payload.subject}`);
     console.log('─────────────────────────────────────────\n');
-    // Extract any URL from the HTML for easy testing
+    // Extract sanitized URL for safe logging
     const urlMatch = payload.html.match(/href="([^"]+)"/);
     if (urlMatch) {
-      console.log('[mailer] ACTION URL:', urlMatch[1]);
+      console.log('[mailer] ACTION URL:', sanitizeUrlForLogs(urlMatch[1]));
       console.log('─────────────────────────────────────────\n');
     }
   }

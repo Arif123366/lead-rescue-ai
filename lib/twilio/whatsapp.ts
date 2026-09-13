@@ -3,6 +3,12 @@ export interface SendWhatsAppInput {
   message: string;
 }
 
+function maskPhone(phone: string): string {
+  const digits = phone.replace(/[^0-9]/g, '');
+  if (digits.length < 5) return '[REDACTED]';
+  return `+${digits.slice(0, 3)}***${digits.slice(-2)}`;
+}
+
 export async function sendWhatsAppMessage(input: SendWhatsAppInput): Promise<{ success: boolean; messageSid?: string; error?: string }> {
   const wasenderApiKey = process.env.WASENDER_API_KEY;
   const wasenderSession = process.env.WASENDER_SESSION_NAME || process.env.WASENDER_SESSION_ID || 'My WhatsApp Session';
@@ -71,16 +77,16 @@ export async function sendWhatsAppMessage(input: SendWhatsAppInput): Promise<{ s
       if (response.ok) {
         return { success: true, messageSid: data.sid };
       } else {
-        console.error('Twilio WhatsApp Send Error:', data);
+        console.error('Twilio WhatsApp Send Error:', data?.message || '[REDACTED_ERROR]');
         return { success: false, error: data.message || 'Twilio API Error' };
       }
     } catch (err: any) {
-      console.error('Twilio fetch error:', err);
+      console.error('Twilio fetch error:', err.message || '[REDACTED_ERROR]');
       return { success: false, error: err.message };
     }
   }
 
   // 3. Simulated Outbound Log (Fallback for dev & testing)
-  console.log(`[WhatsApp Outbound Simulated] To: ${toNumber} | Message: ${input.message.substring(0, 100)}...`);
+  console.log(`[WhatsApp Outbound Simulated] To: ${maskPhone(toNumber)} | Message: [REDACTED] (${input.message?.length || 0} chars)`);
   return { success: true, messageSid: `SM_simulated_${Date.now()}` };
 }

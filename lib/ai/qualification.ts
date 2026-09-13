@@ -70,10 +70,14 @@ export async function qualifyLead(input: LeadQualificationInput): Promise<Qualif
 
   if (OPENROUTER_API_KEY) {
     try {
+      const emailDomain = input.email && input.email.includes('@')
+        ? `@${input.email.split('@')[1]}`
+        : (input.email ? 'Provided' : 'Not provided');
+
       const userMessage = [
         `Lead Name: ${input.name || 'N/A'}`,
         `Company: ${input.company || 'N/A'}`,
-        `Email: ${input.email || 'N/A'}`,
+        `Email: ${emailDomain}`,
         `Phone: ${input.phone ? 'Provided' : 'Not provided'}`,
         `Product Interest: ${input.product_interest || 'N/A'}`,
         `Lead Source: ${input.source_name || 'N/A'}`,

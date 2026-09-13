@@ -72,7 +72,7 @@ router.post('/login', authRateLimiter, async (req, res) => {
       token, // Also return token in body for mobile/bearer clients
     });
   } catch (err) {
-    console.error('[auth/login]', err);
+    console.error('[auth/login]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
@@ -149,7 +149,7 @@ router.post('/signup', authRateLimiter, async (req, res) => {
       token,
     });
   } catch (err) {
-    console.error('[auth/signup]', err);
+    console.error('[auth/signup]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
@@ -167,13 +167,17 @@ router.get('/me', async (req, res) => {
       [session.id]
     );
     const org = await get(
-      'SELECT o.*, sp.name as plan_name, sp.lead_limit, sp.user_limit FROM organizations o JOIN subscription_plans sp ON o.subscription_plan_id = sp.id WHERE o.id = ?',
+      `SELECT o.id, o.name, o.current_lead_count, o.payment_status,
+              sp.name as plan_name, sp.lead_limit, sp.user_limit
+       FROM organizations o
+       JOIN subscription_plans sp ON o.subscription_plan_id = sp.id
+       WHERE o.id = ?`,
       [session.organization_id]
     );
 
     return res.json({ user, organization: org });
   } catch (err) {
-    console.error('[auth/me]', err);
+    console.error('[auth/me]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
@@ -182,6 +186,54 @@ router.get('/me', async (req, res) => {
 router.post('/logout', (req, res) => {
   clearExpressSessionCookie(res);
   return res.json({ message: 'Logged out successfully' });
+});
+
+// DELETE /api/v1/auth/delete-account
+router.delete('/delete-account', async (req, res) => {
+  try {
+    const session = await getCurrentUser(req);
+    if (!session) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const orgId = session.organization_id;
+    const userId = session.id;
+
+    if (session.role === 'Organization Owner') {
+      // Organization Owner: permanently delete the entire organization and all child entities
+      await run('DELETE FROM organization_rag_knowledge WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM external_crm_connectors WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM payment_transactions WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM follow_up_messages WHERE lead_id IN (SELECT id FROM leads WHERE organization_id = ?)', [orgId]);
+      await run('DELETE FROM follow_up_templates WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM appointments WHERE lead_id IN (SELECT id FROM leads WHERE organization_id = ?)', [orgId]);
+      await run('DELETE FROM lead_qualification_results WHERE lead_id IN (SELECT id FROM leads WHERE organization_id = ?)', [orgId]);
+      await run('DELETE FROM leads WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM lead_sources WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM crm_stages WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM user_invitations WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM password_reset_tokens WHERE user_id IN (SELECT id FROM users WHERE organization_id = ?)', [orgId]);
+      await run('DELETE FROM notifications WHERE organization_id = ? OR user_id IN (SELECT id FROM users WHERE organization_id = ?)', [orgId, orgId]);
+      await run('DELETE FROM users WHERE organization_id = ?', [orgId]);
+      await run('DELETE FROM organizations WHERE id = ?', [orgId]);
+    } else {
+      // Team Member: unassign member from organization assets, delete user-specific records and account
+      await run('UPDATE leads SET assigned_to_user_id = NULL WHERE assigned_to_user_id = ?', [userId]);
+      await run('UPDATE appointments SET scheduled_by_user_id = NULL WHERE scheduled_by_user_id = ?', [userId]);
+      await run('DELETE FROM password_reset_tokens WHERE user_id = ?', [userId]);
+      await run('DELETE FROM notifications WHERE user_id = ?', [userId]);
+      await run('DELETE FROM users WHERE id = ?', [userId]);
+    }
+
+    clearExpressSessionCookie(res);
+    return res.json({
+      success: true,
+      message: 'Account and associated personal data have been permanently deleted.'
+    });
+  } catch (err) {
+    console.error('[auth/delete-account]', err.message || '[REDACTED_ERROR]');
+    return res.status(500).json({ error: 'An unexpected error occurred during account deletion.' });
+  }
 });
 
 // POST /api/v1/auth/forgot-password & /api/v1/auth/reset-password
@@ -208,7 +260,7 @@ const handleForgotPasswordRequest = async (req, res) => {
       try {
         await sendPasswordResetEmail({ to: user.email, name: user.name, token: rawToken });
       } catch (emailErr) {
-        console.error('[forgot-password] Email send failed:', emailErr);
+        console.error('[forgot-password] Email send failed:', emailErr.message || '[REDACTED_ERROR]');
       }
     }
 
@@ -220,7 +272,7 @@ const handleForgotPasswordRequest = async (req, res) => {
 
     return res.json({ message: 'If an account with that email exists, a password reset link has been sent.' });
   } catch (err) {
-    console.error('[auth/forgot-password POST]', err);
+    console.error('[auth/forgot-password POST]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 };
@@ -258,7 +310,7 @@ router.patch('/reset-password', authRateLimiter, async (req, res) => {
 
     return res.json({ message: 'Password updated successfully. You can now log in.' });
   } catch (err) {
-    console.error('[auth/reset-password PATCH]', err);
+    console.error('[auth/reset-password PATCH]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
@@ -325,7 +377,7 @@ router.post('/accept-invite', authRateLimiter, async (req, res) => {
       token: token_jwt,
     });
   } catch (err) {
-    console.error('[auth/accept-invite]', err);
+    console.error('[auth/accept-invite]', err.message || '[REDACTED_ERROR]');
     return res.status(500).json({ error: 'An unexpected error occurred.' });
   }
 });
