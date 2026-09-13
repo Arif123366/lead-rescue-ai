@@ -12,20 +12,29 @@ const API_BASE =
 
 /**
  * Thin wrapper around fetch that prepends the configured API base URL.
- * Automatically forwards browser cookies (credentials: 'include').
+ * Forwards cookies (credentials: 'include') and attaches Authorization: Bearer <token>
+ * from localStorage to guarantee seamless cross-domain authentication across all browsers.
  */
 export async function apiFetch(
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
   const url = `${API_BASE}${path}`;
+
+  const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string> || {}),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   return fetch(url, {
     credentials: 'include',
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
+    headers,
   });
 }
 

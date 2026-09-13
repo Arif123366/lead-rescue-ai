@@ -18,7 +18,7 @@ export interface WhatsAppMessagePayload {
 export async function sendWhatsAppMessage(payload: WhatsAppMessagePayload): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const cleanPhone = payload.to.replace(/[^0-9]/g, '');
 
-  if (WASENDER_API_KEY && WASENDER_API_KEY !== 'dummy_wasender_key') {
+  if (WASENDER_API_KEY) {
     try {
       const res = await fetch(WASENDER_API_URL, {
         method: 'POST',

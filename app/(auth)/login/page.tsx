@@ -30,6 +30,10 @@ export default function LoginPage() {
         throw new Error(data.error || 'Invalid email or password.');
       }
 
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+      }
+
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);

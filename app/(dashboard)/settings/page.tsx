@@ -281,7 +281,7 @@ export default function SettingsPage() {
     if (cfgUrl && (cfgUrl.startsWith('http://') || cfgUrl.startsWith('https://'))) {
       return cfgUrl;
     }
-    const backendBase = process.env.NEXT_PUBLIC_API_URL || 'https://lead-rescue-ai-backend.onrender.com';
+    const backendBase = process.env.NEXT_PUBLIC_API_URL || (typeof window !== 'undefined' ? window.location.origin : '');
     return `${backendBase.replace(/\/$/, '')}/api/v1/webhooks/lead-source/${src.id}`;
   };
 

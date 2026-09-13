@@ -7,15 +7,20 @@ import { get } from '../db/db';
 const COOKIE_NAME = 'lead_rescue_session';
 const isProd = process.env.NODE_ENV === 'production';
 
+let devFallbackSecret: string | null = null;
+
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
   if (!secret) {
     if (isProd) {
       throw new Error('JWT_SECRET environment variable is required in production. Generate one with: node -e "console.log(require(\'crypto\').randomBytes(64).toString(\'hex\'))"');
     }
-    // Development-only fallback — NOT for production use
-    console.warn('[auth] WARNING: JWT_SECRET not set. Using insecure development fallback. Set JWT_SECRET in .env.local');
-    return 'lead-rescue-ai-dev-only-insecure-fallback-do-not-use-in-production';
+    // Development-only fallback — dynamically generated in memory to prevent hardcoded string literals
+    if (!devFallbackSecret) {
+      console.warn('[auth] WARNING: JWT_SECRET not set. Generating dynamic temporary session secret for development.');
+      devFallbackSecret = require('crypto').randomBytes(32).toString('hex');
+    }
+    return devFallbackSecret;
   }
   return secret;
 }

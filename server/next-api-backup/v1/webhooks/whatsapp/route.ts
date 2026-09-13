@@ -12,9 +12,9 @@ export async function GET(req: NextRequest) {
   const token = url.searchParams.get('hub.verify_token');
   const challenge = url.searchParams.get('hub.challenge');
 
-  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN || 'lead_rescue_ai_token';
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
 
-  if (mode === 'subscribe' && token === verifyToken) {
+  if (mode === 'subscribe' && token && verifyToken && token === verifyToken) {
     console.log('[WhatsApp Webhook Verified Successfully]');
     return new NextResponse(challenge, { status: 200 });
   }

@@ -156,9 +156,9 @@ router.get('/lead-source/:id', async (req, res) => {
 router.post('/leads', async (req, res) => {
   try {
     const signature = req.headers['x-lead-rescue-signature'] || req.headers['x-hub-signature-256'];
-    const webhookSecret = process.env.WEBHOOK_SECRET || 'lead_rescue_webhook_secret_key';
+    const webhookSecret = process.env.WEBHOOK_SECRET;
 
-    if (signature) {
+    if (signature && webhookSecret) {
       const computed = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(req.body)).digest('hex');
       const expected = signature.replace(/^sha256=/i, '');
       if (computed !== expected && signature !== computed) {
@@ -362,9 +362,9 @@ router.get('/whatsapp', (req, res) => {
   const mode = req.query['hub.mode'];
   const token = req.query['hub.verify_token'];
   const challenge = req.query['hub.challenge'];
-  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN || 'lead_rescue_ai_token';
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
 
-  if (mode === 'subscribe' && token === verifyToken) {
+  if (mode === 'subscribe' && token && verifyToken && token === verifyToken) {
     return res.status(200).send(challenge);
   }
 

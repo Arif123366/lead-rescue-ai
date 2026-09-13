@@ -121,7 +121,12 @@ export function Navbar() {
   }, [isMobileDrawerOpen]);
 
   const handleLogout = async () => {
-    await apiFetch('/api/v1/auth/logout', { method: 'POST' });
+    try {
+      await apiFetch('/api/v1/auth/logout', { method: 'POST' });
+    } catch {}
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
     router.push('/login');
   };
 
